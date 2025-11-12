@@ -6,17 +6,28 @@ Mounts individual API servers at /tools/{api_name}/mcp
 
 import contextlib
 import logging
-import os
 
-import sentry_sdk
-from sentry_sdk.integrations.asyncio import AsyncioIntegration
-from sentry_sdk.integrations.httpx import HttpxIntegration
-from sentry_sdk.integrations.mcp import MCPIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from .servers import (
+# IMPORTANT: Initialize Sentry BEFORE importing server modules
+# This ensures Sentry can properly instrument @mcp.tool decorators
+from .sentry_config import init_sentry
+from .settings import settings
+
+# Initialize Sentry first - must happen before server imports
+init_sentry()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
+
+# Now import server modules - their @mcp.tool decorators will execute during import
+# Note: Import order is intentional - Sentry must be initialized first
+from .servers import (  # noqa: E402
     chembl_server,
     ctg_server,
     gwas_server,
@@ -27,57 +38,6 @@ from .servers import (
     unified_server,
     uniprot_server,
 )
-from .settings import settings
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
-log = logging.getLogger(__name__)
-
-# Initialize Sentry if DSN is provided
-# Starlette and HTTPX integrations are auto-enabled, but we include them explicitly
-# for better control and to ensure proper configuration
-if settings.sentry_dsn:
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        # Add data like request headers and IP for users
-        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-        send_default_pii=settings.sentry_send_default_pii,
-        # Enable sending logs to Sentry
-        enable_logs=settings.sentry_enable_logs,
-        # Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        # Set profile_session_sample_rate to 1.0 to profile 100% of profile sessions
-        profile_session_sample_rate=settings.sentry_profile_session_sample_rate,
-        # Set profile_lifecycle to "trace" to automatically run the profiler
-        # when there is an active transaction
-        profile_lifecycle=settings.sentry_profile_lifecycle,
-        integrations=[
-            # MCP integration - tracks tool executions, prompts, resources
-            MCPIntegration(
-                include_prompts=settings.sentry_send_default_pii,
-            ),
-            # Starlette integration - tracks HTTP requests, errors, performance
-            StarletteIntegration(
-                transaction_style="url",  # Use URL path as transaction name
-                failed_request_status_codes={*range(500, 600)},  # Report 5xx errors
-            ),
-            # HTTPX integration - tracks outgoing HTTP requests from API clients
-            HttpxIntegration(),
-            # Asyncio integration - tracks async operations and context
-            AsyncioIntegration(),
-        ],
-        # Set environment based on common env vars
-        environment=os.getenv("ENVIRONMENT", "local"),
-    )
-    log.info(
-        "Sentry initialized with MCP, Starlette, HTTPX, and asyncio integrations. "
-        f"Tracing: {settings.sentry_traces_sample_rate * 100}%, "
-        f"Profiling: {settings.sentry_profile_session_sample_rate * 100}%, "
-        f"Logs: {'enabled' if settings.sentry_enable_logs else 'disabled'}"
-    )
 
 
 # Suppress anyio.ClosedResourceError from FastMCP streamable HTTP transport
