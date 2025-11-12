@@ -10,19 +10,21 @@ import logging
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-# IMPORTANT: Initialize Sentry BEFORE importing server modules
-# This ensures Sentry can properly instrument @mcp.tool decorators
-from .sentry_config import init_sentry
-from .settings import settings
-
-# Initialize Sentry first - must happen before server imports
-init_sentry()
-
-# Configure logging
+# IMPORTANT: Configure logging BEFORE initializing Sentry
+# This ensures Sentry initialization messages are properly displayed
 logging.basicConfig(
     level=logging.INFO,
     format="[%(levelname)s] %(message)s",
 )
+
+# IMPORTANT: Initialize Sentry BEFORE importing server modules
+# This ensures Sentry can properly instrument @mcp.tool decorators
+from .sentry_config import init_sentry  # noqa: E402
+from .settings import settings  # noqa: E402
+
+# Initialize Sentry first - must happen before server imports
+init_sentry()
+
 log = logging.getLogger(__name__)
 
 # Now import server modules - their @mcp.tool decorators will execute during import
