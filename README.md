@@ -17,8 +17,7 @@ MCP server that integrates multiple biological and medical databases for researc
   indications
 - **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
 
-See [API_PLAN.md](./API_PLAN.md) for detailed information. See
-[NODENORM_API_GUIDE.md](./NODENORM_API_GUIDE.md) for Node Normalization API usage guide.
+See [API_PLAN.md](./API_PLAN.md) for detailed information.
 
 ## Installation
 
@@ -346,14 +345,61 @@ used.
 - `reactome_get_pathway_participants` - Get all participants in a pathway
 - `reactome_get_disease_pathways` - Get pathways associated with a disease
 
+### KEGG Tools
+
+- `kegg_get_pathway_info` - Get pathway information by pathway ID
+- `kegg_list_pathways` - List pathways (optionally filtered by organism)
+- `kegg_find_pathways` - Find pathways matching a query keyword
+- `kegg_get_gene` - Get gene information by gene ID
+- `kegg_find_genes` - Find genes matching a query keyword
+- `kegg_get_disease` - Get disease information by disease ID
+- `kegg_find_diseases` - Find diseases matching a query keyword
+- `kegg_link_pathway_genes` - Get genes linked to a pathway
+
+### UniProt Tools
+
+- `uniprot_get_protein` - Get protein information by accession
+- `uniprot_search_proteins` - Search proteins in UniProtKB
+- `uniprot_get_protein_sequence` - Get protein sequence in FASTA format
+- `uniprot_get_disease_associations` - Get disease associations for a protein
+- `uniprot_map_ids` - Map identifiers between databases
+
+### OMIM Tools
+
+- `omim_get_entry` - Get entry information by MIM number
+- `omim_search_entries` - Search entries in OMIM
+- `omim_get_gene` - Get gene information by gene symbol
+- `omim_search_genes` - Search genes in OMIM
+- `omim_get_phenotype` - Get phenotype information by MIM number
+- `omim_search_phenotypes` - Search phenotypes in OMIM
+
+**Note:** All OMIM tools require an `api_key` parameter. Get your API key from https://omim.org/api
+
+### GWAS Catalog Tools
+
+- `gwas_get_association` - Get association information by association ID
+- `gwas_search_associations` - Search for associations with various filters
+- `gwas_get_variant` - Get SNP information by rsId
+- `gwas_search_variants` - Search for SNPs/variants by rsId
+- `gwas_get_study` - Get study information by study ID
+- `gwas_search_studies` - Search for studies with various filters
+- `gwas_get_trait` - Get trait information by trait ID
+- `gwas_search_traits` - Search for traits
+
+### Pathway Commons Tools
+
+- `pathwaycommons_search` - Search for pathways, proteins, or other biological entities
+- `pathwaycommons_get_pathway_by_uri` - Get pathway information by URI
+- `pathwaycommons_top_pathways` - Get top-level pathways (optionally filtered by gene or datasource)
+- `pathwaycommons_graph` - Get pathway graph/network (neighborhood, paths, etc.)
+- `pathwaycommons_traverse` - Traverse pathway data using graph path expressions
+
 ### Node Normalization Tools
 
 - `get_semantic_types` - Get all supported BioLink semantic types
 - `get_curie_prefixes` - Get all supported CURIE prefixes
 - `get_normalized_nodes` - Normalize one or more CURIEs to get equivalent identifiers
 - `get_allowed_conflations` - Get available conflation types
-
-See [NODENORM_API_GUIDE.md](./NODENORM_API_GUIDE.md) for detailed usage instructions.
 
 ### ChEMBL Tools
 
