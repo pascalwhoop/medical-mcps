@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__medical-apis"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
