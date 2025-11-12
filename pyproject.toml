@@ -2,6 +2,7 @@
 name = "medical-mcps"
 version = "0.1.0"
 description = "MCP servers for biological and medical APIs"
+license = {file = "LICENSE"}
 requires-python = ">=3.12"
 dependencies = [
     "mcp>=1.0.0",
