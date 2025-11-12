@@ -6,7 +6,10 @@ Mounts individual API servers at /tools/{api_name}/mcp
 
 import contextlib
 import logging
+import os
 
+import sentry_sdk
+from sentry_sdk.integrations.mcp import MCPIntegration
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
@@ -21,6 +24,22 @@ from .servers import (
     uniprot_server,
 )
 from .settings import settings
+
+# Initialize Sentry if DSN is provided
+# The MCP integration is automatically enabled when mcp package is in dependencies
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=settings.sentry_send_default_pii,
+        integrations=[
+            MCPIntegration(
+                include_prompts=settings.sentry_send_default_pii,
+            ),
+        ],
+        # Set environment based on common env vars
+        environment=os.getenv("ENVIRONMENT", "production"),
+    )
 
 # Configure logging
 logging.basicConfig(

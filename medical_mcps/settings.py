@@ -17,6 +17,11 @@ class ServerSettings(BaseSettings):
     # Railway provides PORT env var, fallback to MCP_PORT for local dev
     mcp_port: int = 8000
 
+    # Sentry configuration (optional)
+    sentry_dsn: str | None = None
+    sentry_traces_sample_rate: float = 1.0
+    sentry_send_default_pii: bool = False  # Set to True to include tool inputs/outputs
+
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
         import os

@@ -140,6 +140,44 @@ All HTTP-based APIs support caching:
 
 **Note**: ChEMBL uses a library client (not HTTP), so caching is handled at the library level.
 
+## Monitoring with Sentry
+
+The server includes optional [Sentry](https://sentry.io) integration for error tracking and performance monitoring. Sentry automatically instruments MCP tool executions, prompt requests, and resource access.
+
+### Setup
+
+1. Get your Sentry DSN from [sentry.io](https://sentry.io)
+2. Set the `SENTRY_DSN` environment variable:
+
+```bash
+export SENTRY_DSN="https://your-dsn@sentry.io/project-id"
+```
+
+### Configuration
+
+Sentry can be configured via environment variables:
+
+- `SENTRY_DSN` - Your Sentry DSN (required to enable Sentry)
+- `SENTRY_TRACES_SAMPLE_RATE` - Sample rate for performance traces (default: `1.0` = 100%)
+- `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `false`)
+- `ENVIRONMENT` - Environment name (default: `production`)
+
+### What Gets Tracked
+
+Sentry automatically collects:
+
+- **Tool executions**: Tool name, arguments, results, and execution errors
+- **Prompt requests**: Prompt name, arguments, and content
+- **Resource access**: Resource URI and access patterns
+- **Request context**: Request IDs, session IDs, and transport types
+- **Execution spans**: Timing information for all handler invocations
+
+### Privacy
+
+By default, Sentry does **not** include tool inputs/outputs or prompt content (considered PII). To include this data, set `SENTRY_SEND_DEFAULT_PII=true`.
+
+See the [Sentry MCP integration documentation](https://docs.sentry.io/platforms/python/integrations/mcp/) for more details.
+
 ## API Key Handling
 
 **Important:** The MCP server is a **stateless proxy**. It does NOT store API keys.
