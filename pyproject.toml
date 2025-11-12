@@ -20,6 +20,7 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-watch>=4.2.0",
     "tavern>=2.0.0",
     "requests>=2.31.0",
 ]
