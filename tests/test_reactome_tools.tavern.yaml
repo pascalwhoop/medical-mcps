@@ -1,0 +1,181 @@
+---
+test_name: Reactome API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: get_pathway - Happy Path
+  - name: Get pathway with valid ID (R-HSA-1640170)
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "reactome_get_pathway"
+          arguments:
+            pathway_id: "R-HSA-1640170"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "R-HSA|pathway"
+          isError: false
+
+  # Test 2: get_pathway - Error Case
+  - name: Get pathway with invalid ID
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "reactome_get_pathway"
+          arguments:
+            pathway_id: "INVALID_ID_999999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 3: query_pathways - Happy Path
+  - name: Query pathways with valid keyword
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "reactome_query_pathways"
+          arguments:
+            query: "apoptosis"
+            species: "Homo sapiens"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "R-HSA|pathway"
+          isError: false
+
+  # Test 4: get_pathway_participants - Happy Path
+  - name: Get pathway participants with valid pathway ID
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "reactome_get_pathway_participants"
+          arguments:
+            pathway_id: "R-HSA-1640170"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "R-HSA|pathway"
+          isError: false
+
+  # Test 5: get_pathway_participants - Error Case
+  - name: Get pathway participants with invalid pathway ID
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "reactome_get_pathway_participants"
+          arguments:
+            pathway_id: "INVALID_999999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 6: get_disease_pathways - Happy Path
+  - name: Get disease pathways for multiple sclerosis
+    request:
+      url: "http://localhost:8000/tools/reactome/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "reactome_get_disease_pathways"
+          arguments:
+            disease_name: "multiple sclerosis"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "R-HSA|pathway"
+          isError: false
+

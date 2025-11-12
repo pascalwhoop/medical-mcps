@@ -1,0 +1,184 @@
+---
+test_name: ChEMBL API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: get_molecule - Happy Path
+  - name: Get molecule with valid ChEMBL ID (ocrelizumab)
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "chembl_get_molecule"
+          arguments:
+            molecule_chembl_id: "CHEMBL2108041"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "CHEMBL2108041|OCRELIZUMAB"
+          isError: false
+
+  # Test 2: search_molecules - Happy Path
+  - name: Search molecules by name
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "chembl_search_molecules"
+          arguments:
+            query: "ocrelizumab"
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "CHEMBL|molecule"
+          isError: false
+
+  # Test 3: search_targets - Happy Path
+  - name: Search targets by name (CD20)
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "chembl_search_targets"
+          arguments:
+            query: "CD20"
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "CHEMBL|target"
+          isError: false
+
+  # Test 4: get_mechanism - Happy Path
+  - name: Get mechanism of action for ocrelizumab
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "chembl_get_mechanism"
+          arguments:
+            molecule_chembl_id: "CHEMBL2108041"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mechanism|target|action"
+          isError: false
+
+  # Test 5: find_drugs_by_indication - Happy Path
+  - name: Find drugs for Multiple Sclerosis
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "chembl_find_drugs_by_indication"
+          arguments:
+            disease_query: "Multiple Sclerosis"
+            limit: 20
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "drug|indication|Multiple Sclerosis"
+          isError: false
+
+  # Test 6: get_molecule - Error Case
+  - name: Get molecule with invalid ChEMBL ID
+    request:
+      url: "http://localhost:8000/tools/chembl/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "chembl_get_molecule"
+          arguments:
+            molecule_chembl_id: "CHEMBL9999999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error|not found"
+

@@ -1,0 +1,192 @@
+---
+test_name: OMIM API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+      - server_url
+      - omim_api_key
+
+stages:
+  # Test 1: search_entries - Happy Path
+  - name: Search entries with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "omim_search_entries"
+          arguments:
+            search: "diabetes"
+            api_key: "{omim_api_key}"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false
+
+  # Test 2: get_entry - Happy Path
+  - name: Get entry with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "omim_get_entry"
+          arguments:
+            mim_number: "104300"
+            api_key: "{omim_api_key}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false
+
+  # Test 3: get_gene - Happy Path
+  - name: Get gene with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "omim_get_gene"
+          arguments:
+            gene_symbol: "BRCA1"
+            api_key: "{omim_api_key}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false
+
+  # Test 4: search_genes - Happy Path
+  - name: Search genes with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "omim_search_genes"
+          arguments:
+            search: "BRCA"
+            api_key: "{omim_api_key}"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false
+
+  # Test 5: get_phenotype - Happy Path
+  - name: Get phenotype with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "omim_get_phenotype"
+          arguments:
+            mim_number: "104300"
+            api_key: "{omim_api_key}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false
+
+  # Test 6: search_phenotypes - Happy Path
+  - name: Search phenotypes with valid API key
+    request:
+      url: "{server_url}/tools/omim/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "omim_search_phenotypes"
+          arguments:
+            search: "diabetes"
+            api_key: "{omim_api_key}"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mimNumber|entry|gene"
+          isError: false

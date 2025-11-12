@@ -1,0 +1,97 @@
+---
+test_name: GWAS Catalog API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: search_associations - Basic query
+  - name: Search associations for diabetes
+    request:
+      url: "http://localhost:8000/tools/gwas/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "gwas_search_associations"
+          arguments:
+            query: "diabetes"
+            size: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "association|variant|study"
+          isError: false
+
+  # Test 2: search_studies - Basic query
+  - name: Search studies for multiple sclerosis
+    request:
+      url: "http://localhost:8000/tools/gwas/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "gwas_search_studies"
+          arguments:
+            trait: "multiple sclerosis"
+            size: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "association|variant|study"
+          isError: false
+
+  # Test 3: search_traits - Basic query
+  - name: Search traits for autoimmune
+    request:
+      url: "http://localhost:8000/tools/gwas/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "gwas_search_traits"
+          arguments:
+            query: "autoimmune"
+            size: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "association|variant|study"
+          isError: false

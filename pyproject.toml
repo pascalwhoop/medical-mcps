@@ -1,0 +1,36 @@
+[project]
+name = "medical-mcps"
+version = "0.1.0"
+description = "MCP servers for biological and medical APIs"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=1.0.0",
+    "httpx[http2]>=0.27.0",
+    "starlette>=0.49.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic-settings>=2.0.0",
+    "pydantic>=2.0.0",
+    "chembl-webresource-client>=0.10.9",
+    "curl-cffi>=0.13.0",
+    "hishel[httpx,requests]>=1.1.5",
+    "tenacity>=8.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "tavern>=2.0.0",
+    "requests>=2.31.0",
+]
+
+[project.scripts]
+mcp-server = "medical_mcps.http_server:entry_point"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["medical_mcps"]
+

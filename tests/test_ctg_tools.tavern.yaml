@@ -1,0 +1,184 @@
+---
+test_name: ClinicalTrials.gov API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: search_by_condition - Happy Path
+  - name: Search trials by condition (multiple sclerosis)
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "ctg_search_by_condition"
+          arguments:
+            condition_query: "multiple sclerosis"
+            page_size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "NCT|study|multiple sclerosis"
+          isError: false
+
+  # Test 2: search_by_intervention - Happy Path
+  - name: Search trials by intervention (ocrelizumab)
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "ctg_search_by_intervention"
+          arguments:
+            intervention_query: "ocrelizumab"
+            page_size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "NCT|study|ocrelizumab"
+          isError: false
+
+  # Test 3: search_studies - Happy Path with filters
+  - name: Search studies with condition and status filter
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "ctg_search_studies"
+          arguments:
+            condition: "multiple sclerosis"
+            status: "RECRUITING,COMPLETED"
+            page_size: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "NCT|study"
+          isError: false
+
+  # Test 4: get_study - Happy Path
+  - name: Get single study by NCT ID
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "ctg_get_study"
+          arguments:
+            nct_id: "NCT00841061"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "NCT00841061|study"
+          isError: false
+
+  # Test 5: get_study_metadata - Happy Path
+  - name: Get study metadata
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "ctg_get_study_metadata"
+          arguments: {}
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "field|metadata"
+          isError: false
+
+  # Test 6: get_study - Error Case
+  - name: Get study with invalid NCT ID
+    request:
+      url: "http://localhost:8000/tools/ctg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "ctg_get_study"
+          arguments:
+            nct_id: "NCT99999999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error|not found"
+

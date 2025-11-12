@@ -1,0 +1,212 @@
+---
+test_name: UniProt API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: get_protein - Happy Path
+  - name: Get protein with valid accession (P00520)
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "uniprot_get_protein"
+          arguments:
+            accession: "P00520"
+            format: "json"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "P00520"
+          isError: false
+
+  # Test 2: get_protein - Error Case
+  - name: Get protein with invalid accession
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "uniprot_get_protein"
+          arguments:
+            accession: "INVALID_ACCESSION_12345"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 3: search_proteins - Happy Path
+  - name: Search proteins with valid query
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "uniprot_search_proteins"
+          arguments:
+            query: "gene:TP53 AND organism_id:9606"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "TP53"
+          isError: false
+
+  # Test 4: get_protein_sequence - Happy Path
+  - name: Get protein sequence with valid accession
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "uniprot_get_protein_sequence"
+          arguments:
+            accession: "P00520"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "P00520"
+          isError: false
+
+  # Test 5: get_protein_sequence - Error Case
+  - name: Get protein sequence with invalid accession
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "uniprot_get_protein_sequence"
+          arguments:
+            accession: "INVALID123"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 6: get_disease_associations - Happy Path
+  - name: Get disease associations with valid accession
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "uniprot_get_disease_associations"
+          arguments:
+            accession: "P00520"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "disease"
+          isError: false
+
+  # Test 7: map_ids - Happy Path
+  - name: Map IDs with valid parameters
+    request:
+      url: "http://localhost:8000/tools/uniprot/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        method: "tools/call"
+        params:
+          name: "uniprot_map_ids"
+          arguments:
+            from_db: "Gene_Name"
+            to_db: "UniProtKB"
+            ids: "TP53"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        result:
+          content:
+            - type: "text"
+              text: !re_search "TP53|results|Error|mapping"
+          isError: false

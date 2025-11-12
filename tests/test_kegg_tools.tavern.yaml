@@ -1,0 +1,325 @@
+---
+test_name: KEGG API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: get_pathway_info - Happy Path
+  - name: Get pathway with valid ID (hsa05200)
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "kegg_get_pathway_info"
+          arguments:
+            pathway_id: "hsa05200"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa04010|pathway"
+          isError: false
+
+  # Test 2: get_pathway_info - Error Case
+  - name: Get pathway with invalid ID
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "kegg_get_pathway_info"
+          arguments:
+            pathway_id: "invalid99999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 3: list_pathways - Happy Path
+  - name: List pathways for organism hsa
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "kegg_list_pathways"
+          arguments:
+            organism: "hsa"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa04010|pathway"
+          isError: false
+
+  # Test 4: find_pathways - Happy Path
+  - name: Find pathways matching cancer keyword
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "kegg_find_pathways"
+          arguments:
+            query: "cancer"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa04010|pathway"
+          isError: false
+
+  # Test 5: get_gene - Happy Path
+  - name: Get gene with valid ID (hsa:7157)
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "kegg_get_gene"
+          arguments:
+            gene_id: "hsa:7157"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa04010|pathway"
+          isError: false
+
+  # Test 6: get_gene - Error Case
+  - name: Get gene with invalid ID
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "kegg_get_gene"
+          arguments:
+            gene_id: "invalid:99999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
+  # Test 7: find_genes - Happy Path
+  - name: Find genes matching p53
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        method: "tools/call"
+        params:
+          name: "kegg_find_genes"
+          arguments:
+            query: "p53"
+            organism: "hsa"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa:|TP53|p53"
+          isError: false
+
+  # Test 8: get_disease - Happy Path
+  - name: Get disease with valid ID (H00001)
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        method: "tools/call"
+        params:
+          name: "kegg_get_disease"
+          arguments:
+            disease_id: "H00001"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        result:
+          content:
+            - type: "text"
+              text: !re_search "H00001|ENTRY|Disease"
+          isError: false
+
+  # Test 9: find_diseases - Happy Path
+  - name: Find diseases matching cancer
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        method: "tools/call"
+        params:
+          name: "kegg_find_diseases"
+          arguments:
+            query: "cancer"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        result:
+          content:
+            - type: "text"
+              text: !re_search "ds:H|cancer|results"
+          isError: false
+
+  # Test 10: link_pathway_genes - Happy Path
+  - name: Get genes linked to pathway hsa05200
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 10
+        method: "tools/call"
+        params:
+          name: "kegg_link_pathway_genes"
+          arguments:
+            pathway_id: "hsa05200"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 10
+        result:
+          content:
+            - type: "text"
+              text: !re_search "hsa05200|path:|hsa:"
+          isError: false
+
+  # Test 11: link_pathway_genes - Error Case
+  - name: Get genes for invalid pathway
+    request:
+      url: "http://localhost:8000/tools/kegg/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 11
+        method: "tools/call"
+        params:
+          name: "kegg_link_pathway_genes"
+          arguments:
+            pathway_id: "invalid99999"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 11
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Error"
+
