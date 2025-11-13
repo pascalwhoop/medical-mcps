@@ -1,0 +1,249 @@
+---
+test_name: PubMed API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: search_articles by gene - Happy Path
+  - name: Search articles by gene (BRAF)
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "pubmed_search_articles"
+          arguments:
+            genes: ["BRAF"]
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "PMID|BRAF|article"
+          isError: false
+
+  # Test 2: search_articles by disease - Happy Path
+  - name: Search articles by disease (multiple sclerosis)
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "pubmed_search_articles"
+          arguments:
+            diseases: ["multiple sclerosis"]
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "PMID|multiple sclerosis|article"
+          isError: false
+
+  # Test 3: search_articles by drug - Happy Path
+  - name: Search articles by drug (ocrelizumab)
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "pubmed_search_articles"
+          arguments:
+            chemicals: ["ocrelizumab"]
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "PMID|ocrelizumab|article"
+          isError: false
+
+  # Test 4: search_articles with multiple filters - Happy Path
+  - name: Search articles with gene and disease
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "pubmed_search_articles"
+          arguments:
+            genes: ["BRAF"]
+            diseases: ["melanoma"]
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "PMID|BRAF|melanoma|article"
+          isError: false
+
+  # Test 5: get_article by PMID - Happy Path
+  - name: Get article by PMID
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "pubmed_get_article"
+          arguments:
+            pmid_or_doi: "34397683"
+            full: false
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "34397683|title|abstract"
+          isError: false
+
+  # Test 6: search_preprints - Happy Path
+  - name: Search preprints
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "pubmed_search_preprints"
+          arguments:
+            query: "multiple sclerosis"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "DOI|preprint|multiple sclerosis"
+          isError: false
+
+  # Test 7: Error handling - Invalid PMID
+  - name: Get article with invalid PMID
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        method: "tools/call"
+        params:
+          name: "pubmed_get_article"
+          arguments:
+            pmid_or_doi: "999999999999"
+            full: false
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        result:
+          content:
+            - type: "text"
+              text: !re_search "error|not found|Error"
+          isError: false
+
+  # Test 8: search_articles with keywords - Happy Path
+  - name: Search articles with keywords
+    request:
+      url: "http://localhost:8000/tools/pubmed/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        method: "tools/call"
+        params:
+          name: "pubmed_search_articles"
+          arguments:
+            keywords: ["neuroinflammation", "demyelination"]
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        result:
+          content:
+            - type: "text"
+              text: !re_search "PMID|neuroinflammation|demyelination|article"
+          isError: false
+

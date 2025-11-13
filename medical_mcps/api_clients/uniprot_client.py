@@ -32,11 +32,11 @@ class UniProtClient(BaseAPIClient):
             Dict for JSON format, str for text formats (fasta, xml, etc.)
         """
         if format == "json":
-            data = await self._get(f"/uniprotkb/{accession}")
+            data = await self._request("GET", endpoint=f"/uniprotkb/{accession}")
             return self.format_response(data)
         else:
             url = f"{self.base_url}/uniprotkb/{accession}.{format}"
-            text = await self._get_text_direct(url)
+            text = await self._request("GET", url=url, return_json=False)
             return self.format_response(text)
 
     async def search_proteins(
@@ -56,7 +56,7 @@ class UniProtClient(BaseAPIClient):
         """
         params = {"query": query, "size": limit, "from": offset}
         if format == "json":
-            data = await self._get("/uniprotkb/search", params=params)
+            data = await self._request("GET", endpoint="/uniprotkb/search", params=params)
             result_count = (
                 len(data.get("results", [])) if isinstance(data, dict) else None
             )
@@ -65,7 +65,7 @@ class UniProtClient(BaseAPIClient):
         else:
             url = f"{self.base_url}/uniprotkb/search"
             params["format"] = format
-            text = await self._get_text_direct(url, params=params)
+            text = await self._request("GET", url=url, params=params, return_json=False)
             return self.format_response(text)
 
     async def get_protein_sequence(self, accession: str) -> str:
@@ -79,7 +79,7 @@ class UniProtClient(BaseAPIClient):
             FASTA sequence as string
         """
         url = f"{self.base_url}/uniprotkb/{accession}.fasta"
-        text = await self._get_text_direct(url)
+        text = await self._request("GET", url=url, return_json=False)
         return self.format_response(text)
 
     async def get_disease_associations(self, accession: str) -> dict:
@@ -92,7 +92,7 @@ class UniProtClient(BaseAPIClient):
         Returns:
             Dict with disease associations (includes metadata)
         """
-        data = await self._get(f"/uniprotkb/{accession}")
+        data = await self._request("GET", endpoint=f"/uniprotkb/{accession}")
         # Extract disease information from the response
         diseases = []
         if "comments" in data:
@@ -119,7 +119,7 @@ class UniProtClient(BaseAPIClient):
         """
         # UniProt ID mapping requires form-data, not JSON
         payload = {"from": from_db, "to": to_db, "ids": ",".join(ids)}
-        response = await self._post("/idmapping/run", form_data=payload)
+        response = await self._request("POST", endpoint="/idmapping/run", form_data=payload)
 
         # Check if there's an error in the response
         if "jobId" not in response:
@@ -136,13 +136,13 @@ class UniProtClient(BaseAPIClient):
         result_url = f"{self.base_url}/idmapping/status/{job_id}"
         for _ in range(30):  # Max 30 attempts
             await asyncio.sleep(1)
-            status_text = await self._get_text_direct(result_url)
+            status_text = await self._request("GET", url=result_url, return_json=False)
             status = json.loads(status_text)
 
             if status.get("results") or status.get("failedIds"):
                 # Get results
                 results_url = f"{self.base_url}/idmapping/stream/{job_id}"
-                results_text = await self._get_text_direct(results_url)
+                results_text = await self._request("GET", url=results_url, return_json=False)
 
                 # Parse and count mappings
                 try:

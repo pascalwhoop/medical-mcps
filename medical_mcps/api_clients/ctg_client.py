@@ -50,7 +50,6 @@ class CTGClient(BaseAPIClient):
         """
         Make a GET request using requests library (which works with CTG API)
         """
-        await self._rate_limit()
         url = f"{self.base_url}{endpoint}"
 
         # Log HTTP request

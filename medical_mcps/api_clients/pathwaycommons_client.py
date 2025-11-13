@@ -87,7 +87,7 @@ class PathwayCommonsClient(BaseAPIClient):
                 [datasource] if isinstance(datasource, str) else datasource
             )
 
-        data = await self._post("/v2/search", json_data=payload)
+        data = await self._request("POST", endpoint="/v2/search", json_data=payload)
         return self.format_response(data, {"page": page})
 
     async def get_pathway(self, uri: str, format: str = "json") -> dict | str:
@@ -130,7 +130,7 @@ class PathwayCommonsClient(BaseAPIClient):
                 [datasource] if isinstance(datasource, str) else datasource
             )
 
-        data = await self._post("/v2/top_pathways", json_data=payload)
+        data = await self._request("POST", endpoint="/v2/top_pathways", json_data=payload)
         return self.format_response(data, {"limit": limit})
 
     async def graph(
@@ -178,7 +178,7 @@ class PathwayCommonsClient(BaseAPIClient):
         if target:
             payload["target"] = [target]
 
-        data = await self._post(endpoint, json_data=payload)
+        data = await self._request("POST", endpoint=endpoint, json_data=payload)
         return self.format_response(data, {"kind": kind, "limit": limit})
 
     async def traverse(self, uri: str, path: str, format: str = "json") -> dict | str:
@@ -196,5 +196,5 @@ class PathwayCommonsClient(BaseAPIClient):
         # v2 API requires POST with JSON body
         payload: dict[str, Any] = {"uri": [uri], "path": path}
 
-        data = await self._post("/v2/traverse", json_data=payload)
+        data = await self._request("POST", endpoint="/v2/traverse", json_data=payload)
         return self.format_response(data)

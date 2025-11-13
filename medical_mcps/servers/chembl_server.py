@@ -7,6 +7,7 @@ Exposes ChEMBL API tools via MCP at /tools/chembl/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.chembl_client import ChEMBLClient
 
@@ -23,7 +24,7 @@ chembl_mcp = FastMCP(
 )
 
 
-@chembl_mcp.tool(name="chembl_get_molecule")
+@medmcps_tool(name="chembl_get_molecule", servers=[chembl_mcp, unified_mcp])
 async def get_molecule(molecule_chembl_id: str) -> dict:
     """Get molecule (drug/compound) information from ChEMBL by ChEMBL ID.
 
@@ -46,7 +47,7 @@ async def get_molecule(molecule_chembl_id: str) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_search_molecules")
+@medmcps_tool(name="chembl_search_molecules", servers=[chembl_mcp, unified_mcp])
 async def search_molecules(query: str, limit: int = 20) -> dict:
     """Search molecules (drugs/compounds) in ChEMBL by name or synonym.
 
@@ -70,7 +71,7 @@ async def search_molecules(query: str, limit: int = 20) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_get_target")
+@medmcps_tool(name="chembl_get_target", servers=[chembl_mcp, unified_mcp])
 async def get_target(target_chembl_id: str) -> dict:
     """Get target (protein) information from ChEMBL by ChEMBL ID.
 
@@ -93,7 +94,7 @@ async def get_target(target_chembl_id: str) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_search_targets")
+@medmcps_tool(name="chembl_search_targets", servers=[chembl_mcp, unified_mcp])
 async def search_targets(query: str, limit: int = 20) -> dict:
     """Search targets (proteins) in ChEMBL by name or synonym.
 
@@ -117,7 +118,7 @@ async def search_targets(query: str, limit: int = 20) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_get_activities")
+@medmcps_tool(name="chembl_get_activities", servers=[chembl_mcp, unified_mcp])
 async def get_activities(
     target_chembl_id: str = None,
     molecule_chembl_id: str = None,
@@ -148,7 +149,7 @@ async def get_activities(
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_get_mechanism")
+@medmcps_tool(name="chembl_get_mechanism", servers=[chembl_mcp, unified_mcp])
 async def get_mechanism(molecule_chembl_id: str) -> dict:
     """Get mechanism of action for a molecule from ChEMBL.
 
@@ -171,7 +172,7 @@ async def get_mechanism(molecule_chembl_id: str) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_find_drugs_by_target")
+@medmcps_tool(name="chembl_find_drugs_by_target", servers=[chembl_mcp, unified_mcp])
 async def find_drugs_by_target(target_chembl_id: str, limit: int = 50) -> dict:
     """Find all drugs/compounds targeting a specific protein.
 
@@ -197,7 +198,7 @@ async def find_drugs_by_target(target_chembl_id: str, limit: int = 50) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_find_drugs_by_indication")
+@medmcps_tool(name="chembl_find_drugs_by_indication", servers=[chembl_mcp, unified_mcp])
 async def find_drugs_by_indication(disease_query: str, limit: int = 50) -> dict:
     """Find all drugs for a disease/indication.
 
@@ -223,7 +224,7 @@ async def find_drugs_by_indication(disease_query: str, limit: int = 50) -> dict:
         return f"Error calling ChEMBL API: {str(e)}"
 
 
-@chembl_mcp.tool(name="chembl_get_drug_indications")
+@medmcps_tool(name="chembl_get_drug_indications", servers=[chembl_mcp, unified_mcp])
 async def get_drug_indications(molecule_chembl_id: str) -> dict:
     """Get all indications (diseases) for a specific drug.
 

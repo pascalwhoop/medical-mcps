@@ -1,0 +1,158 @@
+---
+test_name: MyVariant.info API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+
+stages:
+  # Test 1: search_variants by gene - Happy Path
+  - name: Search variants by gene (BRAF)
+    request:
+      url: "http://localhost:8000/tools/myvariant/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "myvariant_search_variants"
+          arguments:
+            gene: "BRAF"
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "BRAF|variant|_id"
+          isError: false
+
+  # Test 2: search_variants by rsID - Happy Path
+  - name: Search variants by rsID
+    request:
+      url: "http://localhost:8000/tools/myvariant/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "myvariant_search_variants"
+          arguments:
+            rsid: "rs113488022"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "rs113488022|variant|_id"
+          isError: false
+
+  # Test 3: get_variant - Happy Path
+  - name: Get variant by ID
+    request:
+      url: "http://localhost:8000/tools/myvariant/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "myvariant_get_variant"
+          arguments:
+            variant_id: "rs113488022"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "rs113488022|variant|chrom|position"
+          isError: false
+
+  # Test 4: Error handling - Invalid variant ID
+  - name: Get variant with invalid ID
+    request:
+      url: "http://localhost:8000/tools/myvariant/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "myvariant_get_variant"
+          arguments:
+            variant_id: "invalid_variant_id_12345"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "error|not found|Error"
+          isError: false
+
+  # Test 5: search_variants with filters - Happy Path
+  - name: Search variants with clinical significance filter
+    request:
+      url: "http://localhost:8000/tools/myvariant/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "myvariant_search_variants"
+          arguments:
+            gene: "TP53"
+            significance: "pathogenic"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "TP53|variant|pathogenic|_id"
+          isError: false
+

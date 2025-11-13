@@ -2,6 +2,70 @@
 
 MCP server that integrates multiple biological and medical databases for research purposes.
 
+## Quick Start
+
+### Connect to Production Server
+
+The easiest way to use this MCP server is to connect to the production deployment. All APIs are
+available through a **unified endpoint** that gives you access to all tools in one place.
+
+**Production URL:** `https://medical-mcps-production.up.railway.app/tools/unified/mcp`
+
+### Configure in Cursor (or other MCP client)
+
+Add this to your `.cursor/mcp.json` (or equivalent MCP client configuration):
+
+```json
+{
+  "mcpServers": {
+    "medical-apis": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    }
+  }
+}
+```
+
+### What You Get
+
+Once connected, you'll have access to **100+ tools** across 14 biological and medical APIs:
+
+- **Pathways**: Reactome, KEGG, Pathway Commons
+- **Genes & Proteins**: UniProt, MyGene.info, Node Normalization
+- **Variants**: MyVariant.info, GWAS Catalog
+- **Diseases**: OMIM, MyDisease.info
+- **Drugs**: ChEMBL, MyChem.info, OpenFDA
+- **Literature**: PubMed/PubTator3
+- **Trials**: ClinicalTrials.gov, NCI Clinical Trials
+- **Drug Repurposing Playbooks**: Structured strategies for navigating biomedical data trails
+
+### Example: Search for a Gene
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "mygene_get_gene",
+    "arguments": {
+      "gene_id_or_symbol": "TP53"
+    }
+  }
+}
+```
+
+### Individual API Endpoints
+
+If you prefer to use individual APIs separately, each API has its own endpoint:
+
+- `/tools/reactome/mcp` - Reactome only
+- `/tools/pubmed/mcp` - PubMed only
+- `/tools/chembl/mcp` - ChEMBL only
+- ... (see [Available Endpoints](#available-endpoints) for full list)
+
+### Local Development
+
+To run your own instance locally, see [Running the Server](#running-the-server) below.
+
 ## APIs Integrated
 
 ### ✅ Implemented APIs
@@ -16,10 +80,17 @@ MCP server that integrates multiple biological and medical databases for researc
 - **ChEMBL API** - Drug-target interactions, bioactivity data, mechanisms of action, drug
   indications
 - **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
+- **PubMed/PubTator3 API** - Biomedical literature search, article retrieval, preprint search
+- **OpenFDA API** - FDA adverse event reports, drug labels, device events, drug approvals
+- **MyVariant.info API** - Genetic variant annotations, population frequencies, clinical
+  significance
+- **BioThings Suite APIs** - MyGene.info (gene annotations), MyDisease.info (disease information),
+  MyChem.info (drug/chemical data)
+- **NCI Clinical Trials API** - Cancer clinical trial search and metadata (requires API key)
+- **Drug Repurposing Playbooks** - Structured strategies for drug repurposing discovery (see
+  [PLAYBOOKS.md](./docs/PLAYBOOKS.md))
 
 ![](./agent-usage.png)
-
-See [API_PLAN.md](./API_PLAN.md) for detailed information.
 
 ## Installation
 
@@ -71,14 +142,25 @@ optional SSE streams).
 
 The MCP servers are deployed and available at:
 
-**Production URL:** `https://medical-mcps-production.up.railway.app`
+**Production Base URL:** `https://medical-mcps-production.up.railway.app`
 
-### Configuring MCP Clients
+### Unified Endpoint (Recommended)
 
-Each API is available at its own endpoint. Configure your MCP client (e.g., Cursor) to use either
-the production deployment or a local instance:
+**Use the unified endpoint to access all APIs in one place:**
 
-**Production (Recommended):**
+```json
+{
+  "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+}
+```
+
+This gives you access to all 100+ tools from all APIs through a single connection.
+
+### Individual API Endpoints
+
+If you prefer to use individual APIs separately, each API has its own endpoint:
+
+**Production:**
 
 ```json
 {
@@ -98,20 +180,42 @@ the production deployment or a local instance:
 
 All endpoints are available at both production and local URLs:
 
+- `/tools/unified/mcp` - Unified server (all APIs combined)
 - `/tools/reactome/mcp` - Reactome API
 - `/tools/kegg/mcp` - KEGG API
 - `/tools/uniprot/mcp` - UniProt API
-- `/tools/omim/mcp` - OMIM API
+- `/tools/omim/mcp` - OMIM API (requires API key)
 - `/tools/gwas/mcp` - GWAS Catalog API
 - `/tools/pathwaycommons/mcp` - Pathway Commons API
 - `/tools/nodenorm/mcp` - Node Normalization API
 - `/tools/chembl/mcp` - ChEMBL API
 - `/tools/ctg/mcp` - ClinicalTrials.gov API
+- `/tools/pubmed/mcp` - PubMed/PubTator3 API
+- `/tools/openfda/mcp` - OpenFDA API
+- `/tools/myvariant/mcp` - MyVariant.info API
+- `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
+- `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
+- `/tools/playbooks/mcp` - Drug Repurposing Playbooks
 
 ### Example: Configuring Multiple APIs in Cursor
 
-To use multiple APIs, add separate MCP server entries in your Cursor configuration
-(`.cursor/mcp.json`):
+**Option 1: Use Unified Endpoint (Recommended)**
+
+Access all APIs through one connection:
+
+```json
+{
+  "mcpServers": {
+    "medical-apis": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    }
+  }
+}
+```
+
+**Option 2: Use Individual Endpoints**
+
+If you prefer separate connections for each API:
 
 ```json
 {
@@ -122,8 +226,8 @@ To use multiple APIs, add separate MCP server entries in your Cursor configurati
     "chembl": {
       "url": "https://medical-mcps-production.up.railway.app/tools/chembl/mcp"
     },
-    "kegg": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/kegg/mcp"
+    "pubmed": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/pubmed/mcp"
     }
   }
 }
@@ -134,7 +238,13 @@ To use multiple APIs, add separate MCP server entries in your Cursor configurati
 You can test if the production server is accessible by making a simple HTTP request:
 
 ```bash
-# Test Reactome endpoint
+# Test unified endpoint (recommended)
+curl https://medical-mcps-production.up.railway.app/tools/unified/mcp \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}'
+
+# Or test individual API endpoint
 curl https://medical-mcps-production.up.railway.app/tools/reactome/mcp \
   -X POST \
   -H "Content-Type: application/json" \
@@ -195,6 +305,11 @@ All HTTP-based APIs support caching:
 - GWAS Catalog (httpx)
 - Pathway Commons (httpx)
 - ClinicalTrials.gov (requests)
+- PubMed (httpx)
+- OpenFDA (httpx)
+- MyVariant.info (httpx)
+- BioThings Suite (httpx)
+- NCI Clinical Trials (httpx)
 
 **Note**: ChEMBL uses a library client (not HTTP), so caching is handled at the library level.
 
@@ -297,11 +412,15 @@ as a parameter with each tool call:
 **APIs requiring API keys:**
 
 - **OMIM** - All tools require `api_key` parameter (get from https://omim.org/api)
+- **NCI Clinical Trials** - Optional `api_key` parameter (get from
+  https://clinicaltrialsapi.cancer.gov/)
+- **OpenFDA** - Optional `api_key` parameter for higher rate limits (get from
+  https://open.fda.gov/apis/)
 
 **APIs not requiring API keys:**
 
 - Reactome, KEGG, UniProt, GWAS Catalog, Pathway Commons, Node Normalization, ChEMBL,
-  ClinicalTrials.gov
+  ClinicalTrials.gov, PubMed, MyVariant.info, BioThings Suite (MyGene, MyDisease, MyChem)
 
 ### Pattern for Future APIs
 
@@ -398,10 +517,10 @@ used.
 
 ### Node Normalization Tools
 
-- `get_semantic_types` - Get all supported BioLink semantic types
-- `get_curie_prefixes` - Get all supported CURIE prefixes
-- `get_normalized_nodes` - Normalize one or more CURIEs to get equivalent identifiers
-- `get_allowed_conflations` - Get available conflation types
+- `nodenorm_get_semantic_types` - Get all supported BioLink semantic types
+- `nodenorm_get_curie_prefixes` - Get all supported CURIE prefixes
+- `nodenorm_get_normalized_nodes` - Normalize one or more CURIEs to get equivalent identifiers
+- `nodenorm_get_allowed_conflations` - Get available conflation types
 
 ### ChEMBL Tools
 
@@ -423,6 +542,50 @@ used.
 - `ctg_search_by_intervention` - Search trials by intervention/treatment
 - `ctg_get_study_metadata` - Get data model metadata (available fields)
 
+### PubMed/PubTator3 Tools
+
+- `pubmed_search_articles` - Search biomedical articles from PubMed/PubTator3 by genes, diseases,
+  chemicals, keywords, or variants
+- `pubmed_get_article` - Get detailed article information by PMID or DOI (supports full text
+  retrieval)
+- `pubmed_search_preprints` - Search preprint articles from bioRxiv/medRxiv via Europe PMC
+
+### OpenFDA Tools
+
+- `openfda_search_adverse_events` - Search FDA adverse event reports (FAERS) by drug, reaction, or
+  seriousness
+- `openfda_get_adverse_event` - Get detailed adverse event report by safety report ID
+- `openfda_search_drug_labels` - Search FDA drug product labels (SPL) by drug name, indication, or
+  section
+- `openfda_get_drug_label` - Get full drug label by set ID (with optional section filtering)
+- `openfda_search_device_events` - Search FDA device adverse event reports (MAUDE) by device,
+  manufacturer, or problem
+
+**Note:** OpenFDA tools support optional `api_key` parameter for higher rate limits. Get your API
+key from https://open.fda.gov/apis/
+
+### MyVariant.info Tools
+
+- `myvariant_search_variants` - Search genetic variants by gene, HGVS notation, rsID, clinical
+  significance, frequency, or CADD score
+- `myvariant_get_variant` - Get comprehensive variant details by variant ID (HGVS, rsID, or
+  MyVariant ID)
+
+### BioThings Suite Tools
+
+- `mygene_get_gene` - Get gene information from MyGene.info by ID or symbol
+- `mydisease_get_disease` - Get disease information from MyDisease.info by ID or name
+- `mychem_get_drug` - Get drug/chemical information from MyChem.info by ID or name
+
+### NCI Clinical Trials Tools
+
+- `nci_search_trials` - Search NCI clinical trials for cancer research by condition, intervention,
+  phase, or status
+- `nci_get_trial` - Get NCI trial details by trial ID
+
+**Note:** NCI tools support optional `api_key` parameter. Get your API key from
+https://clinicaltrialsapi.cancer.gov/
+
 ## Development
 
 The server is structured as:
@@ -431,7 +594,9 @@ The server is structured as:
 medical_mcps/
 ├── __init__.py
 ├── http_server.py         # HTTP MCP server (Starlette)
+├── med_mcp_server.py      # Unified MCP server and tool decorator
 ├── settings.py            # Server configuration
+├── sentry_config.py       # Sentry error tracking configuration
 ├── api_clients/           # API client implementations
 │   ├── __init__.py
 │   ├── base_client.py
@@ -443,7 +608,14 @@ medical_mcps/
 │   ├── pathwaycommons_client.py
 │   ├── nodenorm_client.py
 │   ├── chembl_client.py
-│   └── ctg_client.py
+│   ├── ctg_client.py
+│   ├── pubmed_client.py
+│   ├── openfda_client.py
+│   ├── myvariant_client.py
+│   ├── mygene_client.py
+│   ├── mydisease_client.py
+│   ├── mychem_client.py
+│   └── nci_client.py
 └── servers/               # Individual MCP servers per API
     ├── __init__.py
     ├── reactome_server.py
@@ -455,15 +627,31 @@ medical_mcps/
     ├── nodenorm_server.py
     ├── chembl_server.py
     ├── ctg_server.py
-    └── unified_server.py
+    ├── pubmed_server.py
+    ├── openfda_server.py
+    ├── myvariant_server.py
+    ├── biothings_server.py
+    └── nci_server.py
 ```
 
 To add a new API:
 
 1. Create a new client in `api_clients/` (e.g., `newapi_client.py`)
 2. Create a new server in `servers/` (e.g., `newapi_server.py`)
-3. Register the server in `http_server.py` (import, mount, and lifespan)
-4. Follow the naming convention: `{api_name}_{tool_name}` for tools
+3. Use the `@medmcps_tool` decorator from `med_mcp_server` to register tools with both the
+   individual server and unified server
+4. Register the server in `http_server.py` (import, mount, and lifespan)
+5. Follow the naming convention: `{api_name}_{tool_name}` for tools
+
+Example:
+
+```python
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
+
+@medmcps_tool(name="newapi_tool_name", servers=[newapi_mcp, unified_mcp])
+async def tool_function(...):
+    ...
+```
 
 ## Testing
 

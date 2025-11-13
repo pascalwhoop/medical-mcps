@@ -1,0 +1,187 @@
+---
+test_name: OpenFDA API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+
+stages:
+  # Test 1: search_adverse_events by drug - Happy Path
+  - name: Search adverse events by drug (ocrelizumab)
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "openfda_search_adverse_events"
+          arguments:
+            drug: "ocrelizumab"
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "safetyreportid|ocrelizumab|adverse"
+          isError: false
+
+  # Test 2: search_adverse_events by reaction - Happy Path
+  - name: Search adverse events by reaction (nausea)
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "openfda_search_adverse_events"
+          arguments:
+            reaction: "nausea"
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "safetyreportid|nausea|adverse"
+          isError: false
+
+  # Test 3: search_drug_labels - Happy Path
+  - name: Search drug labels
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "openfda_search_drug_labels"
+          arguments:
+            drug_name: "ocrelizumab"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "set_id|ocrelizumab|label"
+          isError: false
+
+  # Test 4: search_device_events - Happy Path
+  - name: Search device events
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "openfda_search_device_events"
+          arguments:
+            device: "sequencer"
+            limit: 5
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "mdr_report_key|device|event"
+          isError: false
+
+  # Test 5: get_adverse_event - Happy Path
+  - name: Get adverse event by report ID
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "openfda_get_adverse_event"
+          arguments:
+            report_id: "12345678"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "safetyreportid|patient|drug|reaction|error|not found"
+          isError: false
+
+  # Test 6: Error handling - Missing required parameter
+  - name: Search adverse events without parameters
+    request:
+      url: "http://localhost:8000/tools/openfda/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "openfda_search_adverse_events"
+          arguments:
+            limit: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "error|required|drug|reaction"
+          isError: false
+

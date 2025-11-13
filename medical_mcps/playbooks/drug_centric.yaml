@@ -1,0 +1,116 @@
+playbook_id: drug_centric
+name: Drug-Centric Discovery
+description: |
+  Start with an existing drug and explore its potential new indications.
+  This leverages existing safety/efficacy data and explores secondary effects,
+  off-target mechanisms, and pleiotropic actions.
+starting_point: drug
+first_principles_framework: |
+  Reverse Pharmacology / Phenotypic Drug Discovery:
+  Start with a known biological effect and work backwards to understand mechanisms.
+  Focus on what the drug DOES rather than what it was DESIGNED to do.
+steps:
+  - step_id: 1_get_drug_profile
+    step_type: query
+    description: "Gather comprehensive drug profile: targets, mechanisms, approved indications, side effects"
+    tool_suggestions:
+      - chembl_get_molecule
+      - chembl_get_mechanism
+      # Critical: ALL activities, not just primary
+      - chembl_get_activities
+      - mychem_get_drug
+    criteria: null
+    outputs:
+      - drug_targets
+      - primary_mechanism
+      - all_activities
+      - approved_indications
+
+  - step_id: 2_identify_secondary_effects
+    step_type: analyze
+    description: |
+      Identify secondary targets, off-target effects, and pleiotropic mechanisms.
+      Look beyond primary indication - these are often repurposing opportunities.
+    tool_suggestions:
+      # Get ALL activities
+      - chembl_get_activities
+      # Understand protein functions
+      - uniprot_get_protein
+    criteria:
+      focus: secondary_targets
+      exclude_primary_indication: true
+    outputs:
+      - secondary_targets
+      - off_target_effects
+      - pleiotropic_mechanisms
+
+  - step_id: 3_map_targets_to_pathways
+    step_type: query
+    description: Map all drug targets (primary + secondary) to biological pathways
+    tool_suggestions:
+      - reactome_query_pathways
+      - kegg_find_pathways
+      - pathwaycommons_search
+    criteria: null
+    outputs:
+      - target_pathways
+      - pathway_network
+
+  - step_id: 4_find_disease_pathway_overlap
+    step_type: analyze
+    description: |
+      Identify diseases with pathway dysregulation that overlaps with drug's pathway effects.
+      Focus on mechanistic alignment, not just indication similarity.
+    tool_suggestions:
+      - reactome_get_disease_pathways
+      - kegg_get_disease
+      - omim_search_entries
+    criteria:
+      # At least 30% pathway overlap
+      pathway_overlap_threshold: 0.3
+      exclude_approved_indications: true
+    outputs:
+      - potential_diseases
+      - pathway_overlap_scores
+
+  - step_id: 5_generate_mechanistic_hypothesis
+    step_type: hypothesize
+    description: |
+      Generate testable hypothesis: How does this drug's mechanism(s) address
+      the disease pathophysiology? Consider both primary and secondary effects.
+    tool_suggestions:
+      # Check existing literature
+      - pubmed_search_articles
+    criteria:
+      require_mechanistic_rationale: true
+      consider_secondary_effects: true
+    outputs:
+      - repurposing_hypothesis
+      - mechanistic_rationale
+
+  - step_id: 6_validate_against_evidence
+    step_type: validate
+    description: |
+      Check for existing clinical evidence, trials, or literature supporting
+      the repurposing hypothesis
+    tool_suggestions:
+      - ctg_search_studies
+      - pubmed_search_articles
+      - nci_search_trials
+    criteria:
+      check_clinical_trials: true
+      check_literature: true
+    outputs:
+      - clinical_evidence
+      - trial_status
+      - literature_support
+
+expected_outputs:
+  - repurposing_candidates
+  - mechanistic_hypotheses
+  - evidence_summary
+
+convergence_criteria:
+  min_pathway_overlap: 0.3
+  require_mechanistic_hypothesis: true
+

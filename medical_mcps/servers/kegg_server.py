@@ -7,6 +7,7 @@ Exposes KEGG API tools via MCP at /tools/kegg/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.kegg_client import KEGGClient
 
@@ -23,7 +24,7 @@ kegg_mcp = FastMCP(
 )
 
 
-@kegg_mcp.tool(name="kegg_get_pathway_info")
+@medmcps_tool(name="kegg_get_pathway_info", servers=[kegg_mcp, unified_mcp])
 async def get_pathway_info(pathway_id: str) -> str:
     """Get pathway information from KEGG by pathway ID.
 
@@ -37,7 +38,7 @@ async def get_pathway_info(pathway_id: str) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_list_pathways")
+@medmcps_tool(name="kegg_list_pathways", servers=[kegg_mcp, unified_mcp])
 async def list_pathways(organism: str | None = None) -> str:
     """List pathways from KEGG. If organism is provided, lists organism-specific pathways.
 
@@ -51,7 +52,7 @@ async def list_pathways(organism: str | None = None) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_find_pathways")
+@medmcps_tool(name="kegg_find_pathways", servers=[kegg_mcp, unified_mcp])
 async def find_pathways(query: str) -> str:
     """Find pathways in KEGG matching a query keyword.
 
@@ -65,7 +66,7 @@ async def find_pathways(query: str) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_get_gene")
+@medmcps_tool(name="kegg_get_gene", servers=[kegg_mcp, unified_mcp])
 async def get_gene(gene_id: str) -> str:
     """Get gene information from KEGG by gene ID.
 
@@ -79,7 +80,7 @@ async def get_gene(gene_id: str) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_find_genes")
+@medmcps_tool(name="kegg_find_genes", servers=[kegg_mcp, unified_mcp])
 async def find_genes(query: str, organism: str | None = None) -> str:
     """Find genes in KEGG matching a query keyword.
 
@@ -94,7 +95,7 @@ async def find_genes(query: str, organism: str | None = None) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_get_disease")
+@medmcps_tool(name="kegg_get_disease", servers=[kegg_mcp, unified_mcp])
 async def get_disease(disease_id: str) -> str:
     """Get disease information from KEGG by disease ID.
 
@@ -108,7 +109,7 @@ async def get_disease(disease_id: str) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_find_diseases")
+@medmcps_tool(name="kegg_find_diseases", servers=[kegg_mcp, unified_mcp])
 async def find_diseases(query: str) -> str:
     """Find diseases in KEGG matching a query keyword.
 
@@ -122,7 +123,7 @@ async def find_diseases(query: str) -> str:
         return f"Error calling KEGG API: {str(e)}"
 
 
-@kegg_mcp.tool(name="kegg_link_pathway_genes")
+@medmcps_tool(name="kegg_link_pathway_genes", servers=[kegg_mcp, unified_mcp])
 async def link_pathway_genes(pathway_id: str) -> str:
     """Get genes linked to a KEGG pathway.
 

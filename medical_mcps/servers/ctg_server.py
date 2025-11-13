@@ -7,6 +7,7 @@ Exposes ClinicalTrials.gov API tools via MCP at /tools/ctg/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.ctg_client import CTGClient
 
@@ -23,7 +24,7 @@ ctg_mcp = FastMCP(
 )
 
 
-@ctg_mcp.tool(name="ctg_search_studies")
+@medmcps_tool(name="ctg_search_studies", servers=[ctg_mcp, unified_mcp])
 async def search_studies(
     condition: str = None,
     intervention: str = None,
@@ -68,7 +69,7 @@ async def search_studies(
         return f"Error calling ClinicalTrials.gov API: {str(e)}"
 
 
-@ctg_mcp.tool(name="ctg_get_study")
+@medmcps_tool(name="ctg_get_study", servers=[ctg_mcp, unified_mcp])
 async def get_study(nct_id: str) -> dict:
     """Get single clinical trial study by NCT ID.
 
@@ -90,7 +91,7 @@ async def get_study(nct_id: str) -> dict:
         return f"Error calling ClinicalTrials.gov API: {str(e)}"
 
 
-@ctg_mcp.tool(name="ctg_search_by_condition")
+@medmcps_tool(name="ctg_search_by_condition", servers=[ctg_mcp, unified_mcp])
 async def search_by_condition(
     condition_query: str, status: str = None, page_size: int = 20
 ) -> dict:
@@ -127,7 +128,7 @@ async def search_by_condition(
         return f"Error calling ClinicalTrials.gov API: {str(e)}"
 
 
-@ctg_mcp.tool(name="ctg_search_by_intervention")
+@medmcps_tool(name="ctg_search_by_intervention", servers=[ctg_mcp, unified_mcp])
 async def search_by_intervention(
     intervention_query: str, status: str = None, page_size: int = 20
 ) -> dict:
@@ -166,7 +167,7 @@ async def search_by_intervention(
         return f"Error calling ClinicalTrials.gov API: {str(e)}"
 
 
-@ctg_mcp.tool(name="ctg_get_study_metadata")
+@medmcps_tool(name="ctg_get_study_metadata", servers=[ctg_mcp, unified_mcp])
 async def get_study_metadata() -> dict:
     """Get ClinicalTrials.gov data model metadata (available fields).
 

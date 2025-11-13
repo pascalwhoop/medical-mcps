@@ -7,6 +7,7 @@ Exposes UniProt API tools via MCP at /tools/uniprot/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.uniprot_client import UniProtClient
 
@@ -23,7 +24,7 @@ uniprot_mcp = FastMCP(
 )
 
 
-@uniprot_mcp.tool(name="uniprot_get_protein")
+@medmcps_tool(name="uniprot_get_protein", servers=[uniprot_mcp, unified_mcp])
 async def get_protein(accession: str, format: str = "json") -> dict | str:
     """Get protein information from UniProt by accession.
 
@@ -45,7 +46,7 @@ async def get_protein(accession: str, format: str = "json") -> dict | str:
         return f"Error calling UniProt API: {str(e)}"
 
 
-@uniprot_mcp.tool(name="uniprot_search_proteins")
+@medmcps_tool(name="uniprot_search_proteins", servers=[uniprot_mcp, unified_mcp])
 async def search_proteins(
     query: str, format: str = "json", limit: int = 25, offset: int = 0
 ) -> dict | str:
@@ -71,7 +72,7 @@ async def search_proteins(
         return f"Error calling UniProt API: {str(e)}"
 
 
-@uniprot_mcp.tool(name="uniprot_get_protein_sequence")
+@medmcps_tool(name="uniprot_get_protein_sequence", servers=[uniprot_mcp, unified_mcp])
 async def get_protein_sequence(accession: str) -> str:
     """Get protein sequence in FASTA format.
 
@@ -91,7 +92,7 @@ async def get_protein_sequence(accession: str) -> str:
         return f"Error calling UniProt API: {str(e)}"
 
 
-@uniprot_mcp.tool(name="uniprot_get_disease_associations")
+@medmcps_tool(name="uniprot_get_disease_associations", servers=[uniprot_mcp, unified_mcp])
 async def get_disease_associations(accession: str) -> dict:
     """Get disease associations for a protein.
 
@@ -113,7 +114,7 @@ async def get_disease_associations(accession: str) -> dict:
         return f"Error calling UniProt API: {str(e)}"
 
 
-@uniprot_mcp.tool(name="uniprot_map_ids")
+@medmcps_tool(name="uniprot_map_ids", servers=[uniprot_mcp, unified_mcp])
 async def map_ids(from_db: str, to_db: str, ids: str) -> dict | str:
     """Map identifiers between databases using UniProt ID mapping.
 

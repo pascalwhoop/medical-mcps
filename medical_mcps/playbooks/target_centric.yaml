@@ -1,0 +1,92 @@
+playbook_id: target_centric
+name: Target-Centric Discovery
+description: |
+  Start with a specific biological target implicated in disease and find
+  all drugs that interact with it. Useful when a target is strongly validated
+  but no approved drugs exist for the disease.
+starting_point: target
+first_principles_framework: |
+  Target-Based Drug Discovery:
+  Focus on validated targets with strong disease association.
+  Then find existing drugs that modulate these targets.
+steps:
+  - step_id: 1_validate_target_disease_association
+    step_type: query
+    description: |
+      Gather evidence for target-disease association: genetic (GWAS),
+      functional (pathway analysis), clinical (biomarker studies)
+    tool_suggestions:
+      - gwas_search_associations
+      - uniprot_get_disease_associations
+      - reactome_get_disease_pathways
+    criteria:
+      require_multiple_evidence_types: true
+    outputs:
+      - target_validation_evidence
+      - association_strength
+
+  - step_id: 2_understand_target_function
+    step_type: query
+    description: |
+      Understand target's role in disease: Is it upregulated/downregulated?
+      What pathways does it participate in? What is its normal function?
+    tool_suggestions:
+      - uniprot_get_protein
+      - reactome_query_pathways
+      - kegg_find_pathways
+    criteria: null
+    outputs:
+      - target_function
+      - pathway_context
+      - disease_role
+
+  - step_id: 3_find_all_drugs_for_target
+    step_type: query
+    description: |
+      Find ALL drugs (approved, investigational, withdrawn) that interact
+      with this target. Include both agonists and antagonists.
+    tool_suggestions:
+      - chembl_get_activities_by_target
+      - chembl_search_molecules
+    criteria:
+      include_all_phases: true
+      include_both_agonists_antagonists: true
+    outputs:
+      - all_drugs_for_target
+      - drug_target_interactions
+
+  - step_id: 4_evaluate_drug_mechanism_alignment
+    step_type: analyze
+    description: |
+      For each drug, evaluate: Does its mechanism (agonist/antagonist/modulator)
+      align with what's needed for the disease? Consider disease pathophysiology.
+    tool_suggestions:
+      - chembl_get_mechanism
+      - chembl_get_activities
+    criteria:
+      require_mechanism_alignment: true
+    outputs:
+      - mechanism_alignment_scores
+      - therapeutic_hypotheses
+
+  - step_id: 5_check_other_indications
+    step_type: query
+    description: |
+      Check what other diseases these drugs are approved/trialed for.
+      Similar diseases may suggest repurposing potential.
+    tool_suggestions:
+      - chembl_get_molecule
+      - ctg_search_studies
+    criteria: null
+    outputs:
+      - other_indications
+      - disease_similarity
+
+expected_outputs:
+  - target_drug_candidates
+  - mechanism_alignment_assessment
+
+convergence_criteria:
+  require_target_validation: true
+  require_mechanism_alignment: true
+

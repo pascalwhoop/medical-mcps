@@ -27,17 +27,23 @@ init_sentry()
 
 log = logging.getLogger(__name__)
 
-# Now import server modules - their @mcp.tool decorators will execute during import
-# Note: Import order is intentional - Sentry must be initialized first
+# Import server modules - their @medmcps_tool decorators automatically register tools with unified_mcp
+# Note: Sentry must be initialized before server imports
 from .servers import (  # noqa: E402
+    biothings_server,
     chembl_server,
     ctg_server,
     gwas_server,
     kegg_server,
+    myvariant_server,
+    nci_server,
+    nodenorm_server,  # noqa: F401 - imported for side effects (tool registration)
     omim_server,
+    openfda_server,
     pathwaycommons_server,
+    playbook_server,
+    pubmed_server,
     reactome_server,
-    unified_server,
     uniprot_server,
 )
 
@@ -75,6 +81,12 @@ async def lifespan(app: Starlette):
     logger.info("  - Pathway Commons: /tools/pathwaycommons/mcp")
     logger.info("  - ChEMBL: /tools/chembl/mcp")
     logger.info("  - ClinicalTrials.gov: /tools/ctg/mcp")
+    logger.info("  - PubMed: /tools/pubmed/mcp")
+    logger.info("  - OpenFDA: /tools/openfda/mcp")
+    logger.info("  - MyVariant: /tools/myvariant/mcp")
+    logger.info("  - BioThings: /tools/biothings/mcp")
+    logger.info("  - NCI Clinical Trials: /tools/nci/mcp (requires API key)")
+    logger.info("  - Drug Repurposing Playbooks: /tools/playbooks/mcp")
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
@@ -92,21 +104,32 @@ async def lifespan(app: Starlette):
         )
         await stack.enter_async_context(chembl_server.chembl_mcp.session_manager.run())
         await stack.enter_async_context(ctg_server.ctg_mcp.session_manager.run())
+        await stack.enter_async_context(pubmed_server.pubmed_mcp.session_manager.run())
         await stack.enter_async_context(
-            unified_server.unified_mcp.session_manager.run()
+            openfda_server.openfda_mcp.session_manager.run()
+        )
+        await stack.enter_async_context(
+            myvariant_server.myvariant_mcp.session_manager.run()
+        )
+        await stack.enter_async_context(
+            biothings_server.biothings_mcp.session_manager.run()
+        )
+        await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
+        await stack.enter_async_context(
+            playbook_server.playbook_mcp.session_manager.run()
         )
         yield
 
     logger.info("Shutting down Biological APIs MCP Server...")
 
 
+from .med_mcp_server import unified_mcp  # noqa: E402
+
 # Create Starlette app and mount all API servers
-# Use streamable_http_app() method - it returns a Starlette app ready to mount
-# This is the correct way per FastMCP documentation
 
 app = Starlette(
     routes=[
-        Mount("/tools/unified", app=unified_server.unified_mcp.streamable_http_app()),
+        Mount("/tools/unified", app=unified_mcp.streamable_http_app()),
         Mount(
             "/tools/reactome", app=reactome_server.reactome_mcp.streamable_http_app()
         ),
@@ -120,6 +143,18 @@ app = Starlette(
         ),
         Mount("/tools/chembl", app=chembl_server.chembl_mcp.streamable_http_app()),
         Mount("/tools/ctg", app=ctg_server.ctg_mcp.streamable_http_app()),
+        Mount("/tools/pubmed", app=pubmed_server.pubmed_mcp.streamable_http_app()),
+        Mount("/tools/openfda", app=openfda_server.openfda_mcp.streamable_http_app()),
+        Mount(
+            "/tools/myvariant", app=myvariant_server.myvariant_mcp.streamable_http_app()
+        ),
+        Mount(
+            "/tools/biothings", app=biothings_server.biothings_mcp.streamable_http_app()
+        ),
+        Mount("/tools/nci", app=nci_server.nci_mcp.streamable_http_app()),
+        Mount(
+            "/tools/playbooks", app=playbook_server.playbook_mcp.streamable_http_app()
+        ),
     ],
     lifespan=lifespan,
 )
@@ -149,8 +184,20 @@ def entry_point():
     chembl_server.chembl_mcp.settings.port = port
     ctg_server.ctg_mcp.settings.host = host
     ctg_server.ctg_mcp.settings.port = port
-    unified_server.unified_mcp.settings.host = host
-    unified_server.unified_mcp.settings.port = port
+    pubmed_server.pubmed_mcp.settings.host = host
+    pubmed_server.pubmed_mcp.settings.port = port
+    openfda_server.openfda_mcp.settings.host = host
+    openfda_server.openfda_mcp.settings.port = port
+    myvariant_server.myvariant_mcp.settings.host = host
+    myvariant_server.myvariant_mcp.settings.port = port
+    biothings_server.biothings_mcp.settings.host = host
+    biothings_server.biothings_mcp.settings.port = port
+    nci_server.nci_mcp.settings.host = host
+    nci_server.nci_mcp.settings.port = port
+    playbook_server.playbook_mcp.settings.host = host
+    playbook_server.playbook_mcp.settings.port = port
+    unified_mcp.settings.host = host
+    unified_mcp.settings.port = port
 
     logger.info(f"Starting server on http://{host}:{port}")
     logger.info("MCP endpoints:")
@@ -163,6 +210,11 @@ def entry_point():
     logger.info(f"  - Pathway Commons: http://{host}:{port}/tools/pathwaycommons/mcp")
     logger.info(f"  - ChEMBL: http://{host}:{port}/tools/chembl/mcp")
     logger.info(f"  - ClinicalTrials.gov: http://{host}:{port}/tools/ctg/mcp")
+    logger.info(f"  - PubMed: http://{host}:{port}/tools/pubmed/mcp")
+    logger.info(f"  - OpenFDA: http://{host}:{port}/tools/openfda/mcp")
+    logger.info(f"  - MyVariant: http://{host}:{port}/tools/myvariant/mcp")
+    logger.info(f"  - BioThings: http://{host}:{port}/tools/biothings/mcp")
+    logger.info(f"  - NCI Clinical Trials: http://{host}:{port}/tools/nci/mcp")
 
     # Run the Starlette app with uvicorn
     uvicorn.run(app, host=host, port=port, log_level="info")

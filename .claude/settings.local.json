@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__medical-apis"
+      "mcp__medical-apis",
+      "mcp__tavily-search__tavily_search"
     ],
     "deny": [],
     "ask": []

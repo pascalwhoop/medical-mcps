@@ -5,6 +5,7 @@ marks:
   - usefixtures:
       - server_process
 
+
 stages:
   # Test 1: search_by_condition - Happy Path
   - name: Search trials by condition (multiple sclerosis)

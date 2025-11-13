@@ -7,6 +7,7 @@ Exposes Pathway Commons API tools via MCP at /tools/pathwaycommons/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.pathwaycommons_client import PathwayCommonsClient
 
@@ -23,7 +24,7 @@ pathwaycommons_mcp = FastMCP(
 )
 
 
-@pathwaycommons_mcp.tool(name="pathwaycommons_search")
+@medmcps_tool(name="pathwaycommons_search", servers=[pathwaycommons_mcp, unified_mcp])
 async def search_pathwaycommons(
     q: str,
     type: str = "Pathway",
@@ -66,7 +67,7 @@ async def search_pathwaycommons(
         return f"Error calling Pathway Commons API: {str(e)}"
 
 
-@pathwaycommons_mcp.tool(name="pathwaycommons_get_pathway_by_uri")
+@medmcps_tool(name="pathwaycommons_get_pathway_by_uri", servers=[pathwaycommons_mcp, unified_mcp])
 async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
     """Get pathway information from Pathway Commons by URI.
 
@@ -86,7 +87,7 @@ async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
         return f"Error calling Pathway Commons API: {str(e)}"
 
 
-@pathwaycommons_mcp.tool(name="pathwaycommons_top_pathways")
+@medmcps_tool(name="pathwaycommons_top_pathways", servers=[pathwaycommons_mcp, unified_mcp])
 async def top_pathways(
     gene: str = None, datasource: str = None, limit: int = 10
 ) -> dict:
@@ -121,7 +122,7 @@ async def top_pathways(
         return f"Error calling Pathway Commons API: {str(e)}"
 
 
-@pathwaycommons_mcp.tool(name="pathwaycommons_graph")
+@medmcps_tool(name="pathwaycommons_graph", servers=[pathwaycommons_mcp, unified_mcp])
 async def graph(
     source: str,
     target: str = None,
@@ -175,7 +176,7 @@ async def graph(
         return f"Error calling Pathway Commons API: {str(e)}"
 
 
-@pathwaycommons_mcp.tool(name="pathwaycommons_traverse")
+@medmcps_tool(name="pathwaycommons_traverse", servers=[pathwaycommons_mcp, unified_mcp])
 async def traverse(uri: str, path: str, format: str = "json") -> dict | str:
     """Traverse pathway data in Pathway Commons using v2 POST API.
 

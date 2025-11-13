@@ -39,13 +39,13 @@ class ReactomeClient(BaseAPIClient):
 
         # Reactome uses /data/query/{pathway_id} endpoint, not /data/pathway/{pathway_id}
         try:
-            data = await self._get(f"/data/query/{pathway_id}")
+            data = await self._request("GET", endpoint=f"/data/query/{pathway_id}")
             return self.format_response(data)
         except Exception as e:
             # If query endpoint fails, try the pathway endpoint as fallback
             if "404" in str(e) or "Not Found" in str(e):
                 try:
-                    data = await self._get(f"/data/pathway/{pathway_id}")
+                    data = await self._request("GET", endpoint=f"/data/pathway/{pathway_id}")
                     return self.format_response(data)
                 except Exception:
                     raise Exception(
@@ -70,7 +70,7 @@ class ReactomeClient(BaseAPIClient):
         if species == "Homo sapiens":
             species = "9606"
         params = {"query": query, "species": species}
-        data = await self._get("/search/query", params=params)
+        data = await self._request("GET", endpoint="/search/query", params=params)
         # Filter results to only pathways
         if isinstance(data, dict) and "results" in data:
             pathway_results = []
@@ -108,7 +108,7 @@ class ReactomeClient(BaseAPIClient):
         last_error = None
         for endpoint in endpoints_to_try:
             try:
-                data = await self._get(endpoint)
+                data = await self._request("GET", endpoint=endpoint)
                 participant_count = len(data) if isinstance(data, list) else None
                 metadata = {"participants": participant_count} if participant_count else None
                 return self.format_response(data, metadata)
@@ -122,7 +122,7 @@ class ReactomeClient(BaseAPIClient):
         # If all endpoints failed, return pathway data with a note
         # that participants endpoint is not available, but include pathway info
         try:
-            pathway_data = await self._get(f"/data/query/{pathway_id}")
+            pathway_data = await self._request("GET", endpoint=f"/data/query/{pathway_id}")
             fallback_data = {
                 "message": "Direct participants endpoint not available for this pathway. "
                 "Pathway information retrieved instead. "
@@ -152,7 +152,7 @@ class ReactomeClient(BaseAPIClient):
         """
         # First, search for the disease using the correct endpoint
         params = {"query": disease_name, "species": "9606"}
-        search_results = await self._get("/search/query", params=params)
+        search_results = await self._request("GET", endpoint="/search/query", params=params)
 
         # Filter for disease entities and get their pathways
         disease_pathways: list[dict] = []
@@ -167,7 +167,7 @@ class ReactomeClient(BaseAPIClient):
                         if disease_id:
                             try:
                                 # Get pathways for this disease
-                                pathway_data = await self._get(
+                                pathway_data = await self._request("GET", endpoint=
                                     f"/data/disease/{disease_id}/pathways"
                                 )
                                 if isinstance(pathway_data, list):

@@ -5,6 +5,7 @@ marks:
   - usefixtures:
       - server_process
 
+
 stages:
   # Test 1: get_pathway_info - Happy Path
   - name: Get pathway with valid ID (hsa05200)

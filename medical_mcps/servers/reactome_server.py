@@ -7,6 +7,7 @@ Exposes Reactome API tools via MCP at /tools/reactome/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.reactome_client import ReactomeClient
 
@@ -23,7 +24,7 @@ reactome_mcp = FastMCP(
 )
 
 
-@reactome_mcp.tool(name="reactome_get_pathway")
+@medmcps_tool(name="reactome_get_pathway", servers=[reactome_mcp, unified_mcp])
 async def get_pathway(pathway_id: str) -> dict:
     """Get pathway information from Reactome API. Returns detailed pathway data including name, species, and related entities.
 
@@ -63,7 +64,7 @@ async def get_pathway(pathway_id: str) -> dict:
         return f"Error calling Reactome API: {str(e)}"
 
 
-@reactome_mcp.tool(name="reactome_query_pathways")
+@medmcps_tool(name="reactome_query_pathways", servers=[reactome_mcp, unified_mcp])
 async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
     """Query pathways from Reactome API by keyword or gene/protein name. Returns matching pathways.
 
@@ -93,7 +94,7 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
         return f"Error calling Reactome API: {str(e)}"
 
 
-@reactome_mcp.tool(name="reactome_get_pathway_participants")
+@medmcps_tool(name="reactome_get_pathway_participants", servers=[reactome_mcp, unified_mcp])
 async def get_pathway_participants(pathway_id: str) -> dict | list:
     """Get all participants (genes, proteins, small molecules) in a Reactome pathway.
 
@@ -130,7 +131,7 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
         return f"Error calling Reactome API: {str(e)}"
 
 
-@reactome_mcp.tool(name="reactome_get_disease_pathways")
+@medmcps_tool(name="reactome_get_disease_pathways", servers=[reactome_mcp, unified_mcp])
 async def get_disease_pathways(disease_name: str) -> dict | list:
     """Get pathways associated with a disease from Reactome API.
 

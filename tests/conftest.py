@@ -122,7 +122,7 @@ def omim_api_key() -> str:
 
 
 def pytest_collection_modifyitems(config, items):
-    """Skip OMIM tests if API key is not set"""
+    """Skip OMIM tests if API key is not set, and mark Pathway Commons tests as slow"""
     omim_api_key = os.getenv("OMIM_API_KEY", "")
     if not omim_api_key:
         skip_omim = pytest.mark.skip(
@@ -131,3 +131,6 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "omim" in item.name.lower():
                 item.add_marker(skip_omim)
+    
+    # Note: Pathway Commons tests are excluded from default test run via Makefile
+    # They require --timeout=200 to run (API is very slow, can take 2-3 minutes)

@@ -11,14 +11,23 @@ from medical_mcps.api_clients.reactome_client import ReactomeClient
 
 @pytest.fixture
 def cache_dir():
-    """Get the cache directory path"""
+    """Get the cache directory path (base directory, not per-process)"""
     return Path.home() / ".cache" / "medical-mcps" / "api_cache"
 
 
 @pytest.fixture
-def clean_reactome_cache(cache_dir):
+def get_cache_file_path():
+    """Get the actual cache file path for current process"""
+    import os
+    process_id = os.getpid()
+    proc_cache_dir = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
+    return lambda api_name: proc_cache_dir / f"{api_name.lower()}.db"
+
+
+@pytest.fixture
+def clean_reactome_cache(get_cache_file_path):
     """Clean Reactome cache before test"""
-    cache_file = cache_dir / "reactome.db"
+    cache_file = get_cache_file_path("reactome")
     if cache_file.exists():
         cache_file.unlink()
     yield
@@ -28,9 +37,9 @@ def clean_reactome_cache(cache_dir):
 
 
 @pytest.fixture
-def clean_ctg_cache(cache_dir):
+def clean_ctg_cache(get_cache_file_path):
     """Clean CTG cache before test"""
-    cache_file = cache_dir / "clinicaltrials.gov.db"
+    cache_file = get_cache_file_path("clinicaltrials.gov")
     if cache_file.exists():
         cache_file.unlink()
     yield
@@ -44,14 +53,15 @@ async def test_reactome_caching_enabled(clean_reactome_cache, cache_dir):
     """Test that Reactome client caching is enabled by default"""
     client = ReactomeClient()
     assert client.enable_cache is True
-    assert client.cache_dir == cache_dir
+    # Cache dir is per-process, so it should be a subdirectory of cache_dir
+    assert cache_dir in client.cache_dir.parents or client.cache_dir == cache_dir
 
 
 @pytest.mark.asyncio
-async def test_reactome_cache_creation(clean_reactome_cache, cache_dir):
+async def test_reactome_cache_creation(clean_reactome_cache, get_cache_file_path):
     """Test that cache file is created after first request"""
     client = ReactomeClient()
-    cache_file = cache_dir / "reactome.db"
+    cache_file = get_cache_file_path("reactome")
 
     # Cache file should not exist initially
     assert not cache_file.exists()
@@ -60,7 +70,7 @@ async def test_reactome_cache_creation(clean_reactome_cache, cache_dir):
         # Make first request
         result1 = await client.get_pathway("R-HSA-1640170")
 
-        # Cache file should be created
+        # Cache file should be created in per-process directory
         assert cache_file.exists(), "Cache file should be created after first request"
         assert cache_file.stat().st_size > 0, "Cache file should not be empty"
 
@@ -71,10 +81,10 @@ async def test_reactome_cache_creation(clean_reactome_cache, cache_dir):
 
 
 @pytest.mark.asyncio
-async def test_reactome_cache_hit(clean_reactome_cache, cache_dir):
+async def test_reactome_cache_hit(clean_reactome_cache, get_cache_file_path):
     """Test that second request uses cache (revalidated)"""
     client = ReactomeClient()
-    cache_file = cache_dir / "reactome.db"
+    cache_file = get_cache_file_path("reactome")
 
     async with client:
         # First request - should store in cache
@@ -193,16 +203,17 @@ async def test_cache_directory_creation(cache_dir):
 
 
 @pytest.mark.asyncio
-async def test_multiple_api_caches(cache_dir):
+async def test_multiple_api_caches(cache_dir, get_cache_file_path):
     """Test that different APIs use separate cache files"""
     reactome_client = ReactomeClient()
     # Note: We can't easily test CTG cache file name without making requests
     # But we can verify the pattern
 
-    assert reactome_client.cache_dir == cache_dir
+    # Cache dir is per-process, so it should be a subdirectory of cache_dir
+    assert cache_dir in reactome_client.cache_dir.parents or reactome_client.cache_dir == cache_dir
 
-    # Reactome should use reactome.db
-    reactome_cache_file = cache_dir / "reactome.db"
+    # Reactome should use reactome.db in per-process directory
+    reactome_cache_file = get_cache_file_path("reactome")
 
     async with reactome_client:
         await reactome_client.get_pathway("R-HSA-1640170")

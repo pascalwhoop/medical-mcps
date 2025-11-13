@@ -5,6 +5,7 @@ marks:
   - usefixtures:
       - server_process
 
+
 stages:
   # Test 1: search_associations - Basic query
   - name: Search associations for diabetes

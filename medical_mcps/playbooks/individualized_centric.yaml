@@ -1,0 +1,185 @@
+playbook_id: individualized_centric
+name: Individualized Discovery (Patient-Led)
+description: |
+  Start with individual symptoms, clinical presentation, and lab results.
+  Systematically rule out diseases to identify the underlying dysfunction.
+  Focus on WHAT is actually wrong mechanistically, not disease labels.
+  Inspired by cases like David Fajgenbaum who identified mTOR overactivation
+  behind his Castleman disease diagnosis.
+starting_point: individual_symptoms
+first_principles_framework: |
+  Phenotype-to-Mechanism Discovery / Patient-Led Research:
+  Disease labels are clinical phenotype descriptions, not mechanistic explanations.
+  Focus on identifying the actual dysfunction (pathway overactivation, protein misfolding,
+  metabolic derangement) rather than accepting disease labels.
+  The cure addresses the dysfunction, not the label.
+steps:
+  - step_id: 1_document_comprehensive_phenotype
+    step_type: query
+    description: |
+      Document ALL symptoms, signs, lab values, imaging findings, and clinical history.
+      Be exhaustive - every detail matters. Include: symptoms, timing, triggers,
+      response to treatments, family history, environmental exposures.
+    tool_suggestions: []
+    criteria:
+      require_comprehensive_documentation: true
+      include_negative_findings: true
+    outputs:
+      - comprehensive_phenotype
+      - clinical_timeline
+      - all_lab_values
+
+  - step_id: 2_generate_differential_diagnosis
+    step_type: analyze
+    description: |
+      Generate broad differential diagnosis based on phenotype.
+      Include rare diseases, common diseases, and atypical presentations.
+      Don't prematurely narrow - consider everything.
+    tool_suggestions:
+      - omim_search_entries
+      - mydisease_search_disease
+      - pubmed_search_articles
+    criteria:
+      include_rare_diseases: true
+      consider_atypical_presentations: true
+    outputs:
+      - differential_diagnosis
+      - disease_candidates
+
+  - step_id: 3_systematically_rule_out_diseases
+    step_type: filter
+    description: |
+      For each disease in differential, systematically evaluate:
+      (1) Does phenotype match? (2) Are required lab findings present/absent?
+      (3) Are genetic markers present/absent? (4) Does disease mechanism explain ALL symptoms?
+      Rule out diseases that don't fit completely.
+    tool_suggestions:
+      - omim_get_entry
+      - mydisease_get_disease
+      - gwas_search_associations
+    criteria:
+      require_complete_phenotype_match: true
+      rule_out_partial_matches: true
+    outputs:
+      - ruled_out_diseases
+      - remaining_candidates
+      - ruling_out_reasoning
+
+  - step_id: 4_identify_underlying_dysfunction
+    step_type: analyze
+    description: |
+      For remaining disease candidates, identify the ACTUAL dysfunction:
+      What pathway is overactive/underactive? What protein is misfolded?
+      What metabolic process is deranged? Focus on mechanism, not label.
+      Example: 'mTOR overactivation' not 'Castleman disease'.
+    tool_suggestions:
+      - reactome_get_disease_pathways
+      - kegg_get_disease
+      - uniprot_get_protein
+      - pathwaycommons_search
+    criteria:
+      focus_on_mechanism: true
+      identify_specific_dysfunction: true
+    outputs:
+      - underlying_dysfunctions
+      - pathway_dysregulations
+      - molecular_mechanisms
+
+  - step_id: 5_determine_diagnostic_tests_needed
+    step_type: hypothesize
+    description: |
+      Determine what additional tests/evidence would confirm the dysfunction:
+      Biomarkers? Genetic tests? Functional assays? Imaging?
+      What would definitively prove the mechanism?
+    tool_suggestions:
+      - uniprot_get_protein
+      - myvariant_search_variants
+      - pubmed_search_articles
+    criteria:
+      identify_definitive_tests: true
+      prioritize_functional_assays: true
+    outputs:
+      - required_tests
+      - diagnostic_plan
+      - evidence_gaps
+
+  - step_id: 6_find_drugs_targeting_dysfunction
+    step_type: query
+    description: |
+      Find drugs that directly address the identified dysfunction.
+      Don't search for 'disease X' drugs - search for 'mTOR inhibitors' or
+      'pathway Y modulators'. The dysfunction, not the disease label, is what matters.
+    tool_suggestions:
+      - chembl_get_activities_by_target
+      - chembl_search_molecules
+      - reactome_query_pathways
+      - kegg_get_pathway
+    criteria:
+      target_dysfunction_not_disease: true
+      include_all_approved_drugs: true
+    outputs:
+      - dysfunction_targeting_drugs
+      - drug_mechanisms
+      - repurposing_candidates
+
+  - step_id: 7_evaluate_drug_dysfunction_alignment
+    step_type: analyze
+    description: |
+      For each drug, evaluate: Does it directly address the dysfunction?
+      Is the mechanism correct (inhibitor for overactivation, activator for underactivation)?
+      What is the evidence it works for this dysfunction?
+    tool_suggestions:
+      - chembl_get_mechanism
+      - chembl_get_activities
+      - pubmed_search_articles
+    criteria:
+      require_mechanism_alignment: true
+      evaluate_direction_of_effect: true
+    outputs:
+      - drug_dysfunction_alignment
+      - mechanism_validation
+
+  - step_id: 8_check_safety_and_feasibility
+    step_type: validate
+    description: |
+      Evaluate safety profile, contraindications, drug interactions, and feasibility.
+      Consider: Is this drug safe for this patient? What monitoring is needed?
+      What are the risks vs. benefits?
+    tool_suggestions:
+      - openfda_label_searcher
+      - openfda_adverse_searcher
+      - pubmed_search_articles
+    criteria:
+      evaluate_safety_profile: true
+      assess_risk_benefit: true
+    outputs:
+      - safety_assessment
+      - feasibility_analysis
+      - risk_benefit
+
+  - step_id: 9_generate_treatment_hypothesis
+    step_type: hypothesize
+    description: |
+      Generate testable hypothesis: 'Drug X will address dysfunction Y by mechanism Z,
+      leading to improvement in symptoms A, B, C.'
+      This hypothesis should be mechanistic, not disease-label-based.
+    tool_suggestions: []
+    criteria:
+      require_mechanistic_hypothesis: true
+      connect_drug_to_symptoms: true
+    outputs:
+      - treatment_hypothesis
+      - expected_outcomes
+      - monitoring_plan
+
+expected_outputs:
+  - underlying_dysfunction
+  - diagnostic_plan
+  - dysfunction_targeting_drugs
+  - treatment_hypothesis
+
+convergence_criteria:
+  require_dysfunction_identification: true
+  require_mechanistic_hypothesis: true
+  require_drug_dysfunction_alignment: true
+

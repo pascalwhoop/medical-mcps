@@ -1,0 +1,74 @@
+playbook_id: phenotypic_centric
+name: Phenotypic-Centric Discovery
+description: |
+  Start with a desired phenotypic outcome (e.g., 'reduce neuroinflammation')
+  and find drugs that produce that phenotype, regardless of their original indication.
+  This is reverse pharmacology - phenotype first, mechanism second.
+starting_point: phenotype
+first_principles_framework: |
+  Phenotypic Drug Discovery / Reverse Pharmacology:
+  Focus on WHAT you want to achieve (phenotype), not HOW (mechanism).
+  Mechanism can be discovered later. This avoids mechanism bias.
+steps:
+  - step_id: 1_define_target_phenotype
+    step_type: analyze
+    description: |
+      Define the target phenotype precisely: What biological outcome do you want?
+      Be specific: 'reduce Th17 cell differentiation' not just 'immunomodulation'
+    tool_suggestions: []
+    criteria:
+      require_specificity: true
+    outputs:
+      - target_phenotype
+      - phenotype_definition
+
+  - step_id: 2_find_drugs_producing_phenotype
+    step_type: query
+    description: |
+      Search literature and databases for drugs that produce the target phenotype.
+      Look beyond primary indications - side effects and secondary mechanisms count.
+    tool_suggestions:
+      - pubmed_search_articles
+      - chembl_search_molecules
+    criteria:
+      include_side_effects: true
+      include_secondary_mechanisms: true
+    outputs:
+      - phenotype_producing_drugs
+      - phenotype_evidence
+
+  - step_id: 3_deconvolute_mechanisms
+    step_type: analyze
+    description: |
+      For each drug producing the phenotype, deconvolute HOW it produces it.
+      This is reverse pharmacology - phenotype known, mechanism discovered.
+    tool_suggestions:
+      - chembl_get_activities
+      - chembl_get_mechanism
+      - reactome_query_pathways
+    criteria: null
+    outputs:
+      - phenotype_mechanisms
+      - mechanism_hypotheses
+
+  - step_id: 4_validate_phenotype_disease_link
+    step_type: validate
+    description: |
+      Validate that achieving this phenotype would benefit the disease.
+      Use disease knowledge base and literature.
+    tool_suggestions:
+      - pubmed_search_articles
+      - reactome_get_disease_pathways
+    criteria:
+      require_disease_phenotype_link: true
+    outputs:
+      - phenotype_disease_validation
+
+expected_outputs:
+  - phenotypic_drug_candidates
+  - phenotype_mechanism_mapping
+
+convergence_criteria:
+  require_phenotype_evidence: true
+  require_disease_link: true
+

@@ -10,6 +10,7 @@ across biological databases, returning equivalent identifiers and semantic types
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.nodenorm_client import NodeNormClient
 
@@ -26,7 +27,7 @@ nodenorm_mcp = FastMCP(
 )
 
 
-@nodenorm_mcp.tool()
+@medmcps_tool(name="nodenorm_get_semantic_types", servers=[nodenorm_mcp, unified_mcp])
 async def get_semantic_types() -> str:
     """Get all BioLink semantic types for which normalization has been attempted.
 
@@ -46,7 +47,7 @@ async def get_semantic_types() -> str:
         return f"Error calling Node Normalization API: {str(e)}"
 
 
-@nodenorm_mcp.tool()
+@medmcps_tool(name="nodenorm_get_curie_prefixes", servers=[nodenorm_mcp, unified_mcp])
 async def get_curie_prefixes() -> str:
     """Get all CURIE prefixes available in the normalization database.
 
@@ -72,7 +73,7 @@ async def get_curie_prefixes() -> str:
         return f"Error calling Node Normalization API: {str(e)}"
 
 
-@nodenorm_mcp.tool()
+@medmcps_tool(name="nodenorm_get_normalized_nodes", servers=[nodenorm_mcp, unified_mcp])
 async def get_normalized_nodes(
     curies: str,
     conflate: bool = True,
@@ -125,7 +126,7 @@ async def get_normalized_nodes(
         return f"Error calling Node Normalization API: {str(e)}"
 
 
-@nodenorm_mcp.tool()
+@medmcps_tool(name="nodenorm_get_allowed_conflations", servers=[nodenorm_mcp, unified_mcp])
 async def get_allowed_conflations() -> str:
     """Get the available conflation types that can be applied during normalization.
 

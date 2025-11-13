@@ -1,0 +1,95 @@
+playbook_id: genetic_centric
+name: Genetic-Centric Discovery
+description: |
+  Start with disease-associated genetic variants and work backwards to
+  find drugs that could compensate for genetic dysfunction. This leverages
+  Mendelian randomization principles.
+starting_point: genetic_variant
+first_principles_framework: |
+  Mendelian Randomization / Genetic Drug Discovery:
+  Genetic variants that cause disease reveal causal pathways.
+  Drugs that mimic protective variants or compensate for risk variants
+  may be therapeutic.
+steps:
+  - step_id: 1_identify_disease_risk_variants
+    step_type: query
+    description: |
+      Identify disease-associated genetic variants from GWAS,
+      rare variant studies, or Mendelian disease genes
+    tool_suggestions:
+      - gwas_search_associations
+      - myvariant_search_variants
+      - omim_get_entry
+    criteria:
+      prioritize_high_confidence: true
+    outputs:
+      - risk_variants
+      - variant_genes
+      - association_strength
+
+  - step_id: 2_understand_variant_mechanism
+    step_type: query
+    description: |
+      Understand how variants cause disease: loss-of-function, gain-of-function,
+      altered expression, protein misfolding, etc.
+    tool_suggestions:
+      - myvariant_get_variant
+      - uniprot_get_protein
+      - omim_get_entry
+    criteria: null
+    outputs:
+      - variant_mechanisms
+      - functional_impact
+
+  - step_id: 3_identify_protective_variants
+    step_type: query
+    description: |
+      Find protective variants (reduce disease risk) in same genes/pathways.
+      Drugs mimicking protective variants may be therapeutic.
+    tool_suggestions:
+      - gwas_search_associations
+      - myvariant_search_variants
+    criteria:
+      look_for_protective_effects: true
+    outputs:
+      - protective_variants
+      - protective_mechanisms
+
+  - step_id: 4_find_drugs_compensating_variants
+    step_type: query
+    description: |
+      Find drugs that could compensate for variant dysfunction:
+      (1) Mimic protective variants, (2) Compensate for loss-of-function,
+      (3) Counteract gain-of-function
+    tool_suggestions:
+      - chembl_get_activities_by_target
+      - uniprot_get_protein
+    criteria:
+      match_variant_mechanism: true
+    outputs:
+      - compensatory_drugs
+      - compensation_mechanisms
+
+  - step_id: 5_validate_mendelian_randomization
+    step_type: validate
+    description: |
+      Validate using Mendelian randomization principles:
+      If genetic variant affects disease risk, and drug affects same pathway,
+      drug should affect disease risk similarly.
+    tool_suggestions:
+      - gwas_search_associations
+      - pubmed_search_articles
+    criteria:
+      check_mr_evidence: true
+    outputs:
+      - mr_validation
+      - causal_evidence
+
+expected_outputs:
+  - genetic_drug_candidates
+  - variant_compensation_assessment
+
+convergence_criteria:
+  require_genetic_validation: true
+  require_compensation_mechanism: true
+

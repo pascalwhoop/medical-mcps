@@ -33,7 +33,7 @@ class NodeNormClient(BaseAPIClient):
         Returns:
             Dict with semantic types organized by category
         """
-        data = await self._get("/get_semantic_types")
+        data = await self._request("GET", endpoint="/get_semantic_types")
         return self.format_response(data)
 
     async def get_curie_prefixes(self) -> dict | list | str:
@@ -45,7 +45,7 @@ class NodeNormClient(BaseAPIClient):
         Returns:
             Dict with CURIE prefixes and their usage counts
         """
-        data = await self._get("/get_curie_prefixes")
+        data = await self._request("GET", endpoint="/get_curie_prefixes")
         return self.format_response(data)
 
     async def get_normalized_nodes(
@@ -89,7 +89,7 @@ class NodeNormClient(BaseAPIClient):
         """
         # Use POST method for better handling of multiple CURIEs
         payload = {"curies": curies}
-        result = await self._post("/get_normalized_nodes", json_data=payload)
+        result = await self._request("POST", endpoint="/get_normalized_nodes", json_data=payload)
 
         # Format the response with additional metadata
         formatted_result = {
@@ -118,5 +118,5 @@ class NodeNormClient(BaseAPIClient):
         Returns:
             Dict with available conflation types
         """
-        data = await self._get("/get_allowed_conflations")
+        data = await self._request("GET", endpoint="/get_allowed_conflations")
         return self.format_response(data)

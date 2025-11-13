@@ -1,0 +1,154 @@
+---
+test_name: BioThings Suite API Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+
+stages:
+  # Test 1: mygene_get_gene by symbol - Happy Path
+  - name: Get gene by symbol (TP53)
+    request:
+      url: "http://localhost:8000/tools/biothings/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "mygene_get_gene"
+          arguments:
+            gene_id_or_symbol: "TP53"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "TP53|gene|symbol|entrezgene"
+          isError: false
+
+  # Test 2: mydisease_get_disease by name - Happy Path
+  - name: Get disease by name (melanoma)
+    request:
+      url: "http://localhost:8000/tools/biothings/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "mydisease_get_disease"
+          arguments:
+            disease_id_or_name: "melanoma"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "melanoma|disease|MONDO|name"
+          isError: false
+
+  # Test 3: mychem_get_drug by name - Happy Path
+  - name: Get drug by name (imatinib)
+    request:
+      url: "http://localhost:8000/tools/biothings/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "mychem_get_drug"
+          arguments:
+            drug_id_or_name: "imatinib"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "imatinib|drug|DrugBank|ChEMBL"
+          isError: false
+
+  # Test 4: Error handling - Invalid gene symbol
+  - name: Get gene with invalid symbol
+    request:
+      url: "http://localhost:8000/tools/biothings/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "mygene_get_gene"
+          arguments:
+            gene_id_or_symbol: "INVALIDGENE123"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "error|not found|Error"
+          isError: false
+
+  # Test 5: mygene_get_gene by Entrez ID - Happy Path
+  - name: Get gene by Entrez ID (7157 for TP53)
+    request:
+      url: "http://localhost:8000/tools/biothings/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "mygene_get_gene"
+          arguments:
+            gene_id_or_symbol: "7157"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "7157|TP53|gene|entrezgene"
+          isError: false
+

@@ -1,0 +1,119 @@
+playbook_id: disease_centric
+name: Disease-Centric Discovery
+description: |
+  Start with a disease and systematically identify drugs that could address
+  its pathophysiology. Focus on understanding disease mechanisms first, then
+  finding drugs that modulate those mechanisms.
+starting_point: disease
+first_principles_framework: |
+  Systems Biology / Network Medicine:
+  Understand disease as a network of dysregulated pathways, then identify
+  intervention points. Focus on root causes, not just symptoms.
+steps:
+  - step_id: 1_map_disease_pathophysiology
+    step_type: query
+    description: |
+      Comprehensively map disease pathophysiology: pathways, targets,
+      genetic associations, molecular mechanisms
+    tool_suggestions:
+      - reactome_get_disease_pathways
+      - kegg_get_disease
+      - gwas_search_associations
+      - omim_get_entry
+    criteria: null
+    outputs:
+      - disease_pathways
+      - risk_genes
+      - pathophysiological_mechanisms
+
+  - step_id: 2_prioritize_pathways_by_evidence
+    step_type: analyze
+    description: |
+      Prioritize pathways based on: (1) GWAS genetic validation,
+      (2) pathway centrality in disease network, (3) druggability of components
+    tool_suggestions:
+      - gwas_search_associations
+      - reactome_query_pathways
+      - pathwaycommons_graph
+    criteria:
+      prioritize_gwas_validated: true
+      min_pathway_genes: 3
+    outputs:
+      - prioritized_pathways
+      - pathway_evidence_scores
+
+  - step_id: 3_identify_druggable_targets
+    step_type: query
+    description: |
+      For each prioritized pathway, identify druggable targets:
+      enzymes, receptors, cytokines, transcription factors
+    tool_suggestions:
+      - uniprot_search_proteins
+      - reactome_get_pathway_participants
+      - kegg_link_pathway_genes
+    criteria:
+      target_types:
+        - enzyme
+        - receptor
+        - cytokine
+        - transcription_factor
+      require_druggability_evidence: true
+    outputs:
+      - druggable_targets
+      - target_pathway_mapping
+
+  - step_id: 4_find_drugs_targeting_pathways
+    step_type: query
+    description: |
+      Find approved drugs or drugs in trials that target the identified
+      pathway components. Consider both direct and indirect pathway modulation.
+    tool_suggestions:
+      - chembl_search_molecules
+      - chembl_get_activities_by_target
+      - kegg_get_pathway  # Some pathways list drugs
+    criteria:
+      prefer_approved_drugs: true
+      include_trial_drugs: true
+    outputs:
+      - candidate_drugs
+      - drug_target_mapping
+
+  - step_id: 5_evaluate_mechanistic_fit
+    step_type: analyze
+    description: |
+      Evaluate how well each drug's mechanism aligns with disease pathophysiology.
+      Consider: (1) Does it address root causes or symptoms?
+      (2) Does it target validated pathways? (3) Are there contraindications?
+    tool_suggestions:
+      - chembl_get_mechanism
+      - openfda_label_searcher
+    criteria:
+      prefer_root_cause_targeting: true
+      check_contraindications: true
+    outputs:
+      - mechanistic_fit_scores
+      - safety_assessment
+
+  - step_id: 6_check_unmet_needs
+    step_type: validate
+    description: |
+      Identify which disease subtypes, stages, or patient populations
+      have unmet needs that these drugs could address
+    tool_suggestions:
+      - ctg_search_studies
+      - pubmed_search_articles
+    criteria:
+      focus_unmet_needs: true
+    outputs:
+      - unmet_needs
+      - target_populations
+
+expected_outputs:
+  - repurposing_candidates
+  - pathway_drug_mapping
+  - mechanistic_fit_assessment
+
+convergence_criteria:
+  require_pathway_validation: true
+  min_mechanistic_fit_score: 0.6
+

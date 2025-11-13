@@ -1,0 +1,72 @@
+playbook_id: network_centric
+name: Network-Centric Discovery
+description: |
+  Use network biology to find drugs that restore disease network homeostasis.
+  This considers the entire interactome, not just individual targets or pathways.
+starting_point: disease_network
+first_principles_framework: |
+  Network Medicine / Systems Pharmacology:
+  Diseases are network perturbations. Drugs that restore network topology
+  or dynamics may be therapeutic. Focus on network-level effects.
+steps:
+  - step_id: 1_construct_disease_network
+    step_type: query
+    description: |
+      Construct disease network: disease genes, pathways, interactions,
+      regulatory relationships
+    tool_suggestions:
+      - pathwaycommons_graph
+      - reactome_query_pathways
+      - gwas_search_associations
+    criteria: null
+    outputs:
+      - disease_network
+      - network_topology
+
+  - step_id: 2_identify_network_dysregulation
+    step_type: analyze
+    description: |
+      Identify how disease perturbs network: hub disruption, module dysfunction,
+      edge rewiring, etc.
+    tool_suggestions:
+      - pathwaycommons_traverse
+    criteria:
+      identify_network_perturbations: true
+    outputs:
+      - network_dysregulation
+      - perturbation_points
+
+  - step_id: 3_find_drugs_restoring_network
+    step_type: query
+    description: |
+      Find drugs that could restore network homeostasis: target network hubs,
+      restore module function, rewire edges
+    tool_suggestions:
+      - chembl_get_activities_by_target
+      - pathwaycommons_search
+    criteria:
+      evaluate_network_effects: true
+    outputs:
+      - network_restoring_drugs
+      - network_intervention_points
+
+  - step_id: 4_evaluate_network_effects
+    step_type: analyze
+    description: |
+      Evaluate drug's network-level effects: Does it restore topology?
+      Improve module function? Consider network dynamics.
+    tool_suggestions:
+      - pathwaycommons_traverse
+    criteria:
+      evaluate_network_restoration: true
+    outputs:
+      - network_effect_assessment
+
+expected_outputs:
+  - network_drug_candidates
+  - network_restoration_assessment
+
+convergence_criteria:
+  require_network_validation: true
+  require_network_restoration: true
+

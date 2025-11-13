@@ -1,0 +1,275 @@
+---
+test_name: Drug Repurposing Playbook Tools Test Suite
+
+marks:
+  - usefixtures:
+      - server_process
+
+
+stages:
+  # Test 1: playbook_list_all - Happy Path
+  - name: List all available playbooks
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "playbook_list_all"
+          arguments: {}
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "playbooks|drug_centric|disease_centric"
+          isError: false
+
+  # Test 2: playbook_get_details - Happy Path
+  - name: Get details for drug_centric playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "playbook_get_details"
+          arguments:
+            playbook_id: "drug_centric"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Drug-Centric Discovery|drug_centric|steps"
+          isError: false
+
+  # Test 3: playbook_get_steps - Happy Path
+  - name: Get steps for disease_centric playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "playbook_get_steps"
+          arguments:
+            playbook_id: "disease_centric"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "disease_centric|steps|step_id"
+          isError: false
+
+  # Test 4: playbook_execute_step - Happy Path
+  - name: Execute first step of pathway_centric playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "playbook_execute_step"
+          arguments:
+            playbook_id: "pathway_centric"
+            step_id: "1_identify_disease_pathways"
+            inputs:
+              disease: "multiple sclerosis"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "pathway_centric|1_identify_disease_pathways|tool_suggestions"
+          isError: false
+
+  # Test 5: playbook_compare_strategies - Happy Path
+  - name: Compare playbook strategies for disease starting point
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "playbook_compare_strategies"
+          arguments:
+            starting_point: "disease"
+            disease: "multiple sclerosis"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "playbooks|disease_centric|recommendations"
+          isError: false
+
+  # Test 6: playbook_get_details - Error Path (invalid playbook)
+  - name: Get details for non-existent playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "playbook_get_details"
+          arguments:
+            playbook_id: "nonexistent_playbook"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "not found|available_playbooks"
+          isError: false
+
+  # Test 7: playbook_get_steps - Error Path (invalid playbook)
+  - name: Get steps for non-existent playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        method: "tools/call"
+        params:
+          name: "playbook_get_steps"
+          arguments:
+            playbook_id: "invalid_id"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        result:
+          content:
+            - type: "text"
+              text: !re_search "not found|available_playbooks"
+          isError: false
+
+  # Test 8: playbook_execute_step - Error Path (invalid step)
+  - name: Execute non-existent step
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        method: "tools/call"
+        params:
+          name: "playbook_execute_step"
+          arguments:
+            playbook_id: "drug_centric"
+            step_id: "999_invalid_step"
+            inputs: {}
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        result:
+          content:
+            - type: "text"
+              text: !re_search "not found|available_steps"
+          isError: false
+
+  # Test 9: Test individualized_centric playbook (new playbook)
+  - name: Get details for individualized_centric playbook
+    request:
+      url: "http://localhost:8000/tools/playbooks/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        method: "tools/call"
+        params:
+          name: "playbook_get_details"
+          arguments:
+            playbook_id: "individualized_centric"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        result:
+          content:
+            - type: "text"
+              text: !re_search "Individualized Discovery|individualized_centric|David Fajgenbaum"
+          isError: false
+

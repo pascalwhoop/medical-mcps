@@ -5,6 +5,7 @@ marks:
   - usefixtures:
       - server_process
 
+
 stages:
   # Test 1: search_pathwaycommons - Search for a well-known protein
   - name: Search for TP53 protein

@@ -16,12 +16,14 @@ dependencies = [
     "hishel[httpx,requests]>=1.1.5",
     "tenacity>=8.2.0",
     "sentry-sdk[mcp]>=2.44.0",
+    "pyyaml>=6.0.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-timeout>=2.3.0",
     "pytest-watch>=4.2.0",
     "tavern>=2.0.0",
     "requests>=2.31.0",
@@ -36,4 +38,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["medical_mcps"]
+
+[tool.pytest.ini_options]
+timeout = 60
+timeout_method = "thread"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 

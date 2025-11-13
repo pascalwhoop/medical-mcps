@@ -9,6 +9,8 @@ import logging
 from mcp.server.fastmcp import FastMCP
 
 from ..api_clients.gwas_client import GWASClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ gwas_mcp = FastMCP(
 )
 
 
-@gwas_mcp.tool(name="gwas_get_association")
+@medmcps_tool(name="gwas_get_association", servers=[gwas_mcp, unified_mcp])
 async def get_association(association_id: str) -> dict:
     """Get association information from GWAS Catalog by ID.
 
@@ -39,7 +41,7 @@ async def get_association(association_id: str) -> dict:
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_search_associations")
+@medmcps_tool(name="gwas_search_associations", servers=[gwas_mcp, unified_mcp])
 async def search_associations(
     query: str = None,
     variant_id: str = None,
@@ -69,7 +71,7 @@ async def search_associations(
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_get_variant")
+@medmcps_tool(name="gwas_get_variant", servers=[gwas_mcp, unified_mcp])
 async def get_variant(variant_id: str) -> dict:
     """Get single nucleotide polymorphism (SNP) information from GWAS Catalog by rsId.
 
@@ -91,7 +93,7 @@ async def get_variant(variant_id: str) -> dict:
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_search_variants")
+@medmcps_tool(name="gwas_search_variants", servers=[gwas_mcp, unified_mcp])
 async def search_variants(query: str = None, size: int = 20, page: int = 0) -> dict:
     """Search for SNPs/variants in GWAS Catalog by rsId.
 
@@ -116,7 +118,7 @@ async def search_variants(query: str = None, size: int = 20, page: int = 0) -> d
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_get_study")
+@medmcps_tool(name="gwas_get_study", servers=[gwas_mcp, unified_mcp])
 async def get_study(study_id: str) -> dict:
     """Get study information from GWAS Catalog by ID.
 
@@ -130,7 +132,7 @@ async def get_study(study_id: str) -> dict:
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_search_studies")
+@medmcps_tool(name="gwas_search_studies", servers=[gwas_mcp, unified_mcp])
 async def search_studies(
     query: str = None, trait: str = None, size: int = 20, page: int = 0
 ) -> dict:
@@ -151,7 +153,7 @@ async def search_studies(
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_get_trait")
+@medmcps_tool(name="gwas_get_trait", servers=[gwas_mcp, unified_mcp])
 async def get_trait(trait_id: str) -> dict:
     """Get trait information from GWAS Catalog by ID.
 
@@ -165,7 +167,7 @@ async def get_trait(trait_id: str) -> dict:
         return f"Error calling GWAS Catalog API: {str(e)}"
 
 
-@gwas_mcp.tool(name="gwas_search_traits")
+@medmcps_tool(name="gwas_search_traits", servers=[gwas_mcp, unified_mcp])
 async def search_traits(query: str = None, size: int = 20, page: int = 0) -> dict:
     """Search for traits in GWAS Catalog.
 

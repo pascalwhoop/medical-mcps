@@ -8,6 +8,7 @@ API key MUST be provided by the MCP client with each request
 import logging
 
 from mcp.server.fastmcp import FastMCP
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.omim_client import OMIMClient
 
@@ -21,7 +22,7 @@ omim_mcp = FastMCP(
 )
 
 
-@omim_mcp.tool(name="omim_get_entry")
+@medmcps_tool(name="omim_get_entry", servers=[omim_mcp, unified_mcp])
 async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dict:
     """Get entry information from OMIM by MIM number.
     
@@ -41,7 +42,7 @@ async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dic
         return f"Error calling OMIM API: {str(e)}"
 
 
-@omim_mcp.tool(name="omim_search_entries")
+@medmcps_tool(name="omim_search_entries", servers=[omim_mcp, unified_mcp])
 async def search_entries(
     search: str,
     api_key: str,
@@ -69,7 +70,7 @@ async def search_entries(
         return f"Error calling OMIM API: {str(e)}"
 
 
-@omim_mcp.tool(name="omim_get_gene")
+@medmcps_tool(name="omim_get_gene", servers=[omim_mcp, unified_mcp])
 async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> dict:
     """Get gene information from OMIM by gene symbol.
     
@@ -89,7 +90,7 @@ async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> 
         return f"Error calling OMIM API: {str(e)}"
 
 
-@omim_mcp.tool(name="omim_search_genes")
+@medmcps_tool(name="omim_search_genes", servers=[omim_mcp, unified_mcp])
 async def search_genes(
     search: str,
     api_key: str,
@@ -117,7 +118,7 @@ async def search_genes(
         return f"Error calling OMIM API: {str(e)}"
 
 
-@omim_mcp.tool(name="omim_get_phenotype")
+@medmcps_tool(name="omim_get_phenotype", servers=[omim_mcp, unified_mcp])
 async def get_phenotype(mim_number: str, api_key: str, include: str = "text") -> dict:
     """Get phenotype information from OMIM by MIM number.
     
@@ -137,7 +138,7 @@ async def get_phenotype(mim_number: str, api_key: str, include: str = "text") ->
         return f"Error calling OMIM API: {str(e)}"
 
 
-@omim_mcp.tool(name="omim_search_phenotypes")
+@medmcps_tool(name="omim_search_phenotypes", servers=[omim_mcp, unified_mcp])
 async def search_phenotypes(
     search: str,
     api_key: str,

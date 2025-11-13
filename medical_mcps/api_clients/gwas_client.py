@@ -27,7 +27,7 @@ class GWASClient(BaseAPIClient):
         Returns:
             Dict with association data
         """
-        data = await self._get(f"/associations/{association_id}")
+        data = await self._request("GET", endpoint=f"/associations/{association_id}")
         return self.format_response(data)
 
     async def search_associations(
@@ -63,7 +63,7 @@ class GWASClient(BaseAPIClient):
         if trait:
             params["efoTraits"] = trait
 
-        data = await self._get("/associations", params=params)
+        data = await self._request("GET", endpoint="/associations", params=params)
 
         # Extract result count if available
         result_count = None
@@ -88,7 +88,7 @@ class GWASClient(BaseAPIClient):
         Returns:
             Dict with variant data
         """
-        data = await self._get(f"/singleNucleotidePolymorphisms/{variant_id}")
+        data = await self._request("GET", endpoint=f"/singleNucleotidePolymorphisms/{variant_id}")
         return self.format_response(data)
 
     async def search_variants(
@@ -109,7 +109,7 @@ class GWASClient(BaseAPIClient):
         if query:
             params["rsId"] = query
 
-        data = await self._get("/singleNucleotidePolymorphisms", params=params)
+        data = await self._request("GET", endpoint="/singleNucleotidePolymorphisms", params=params)
 
         # Extract result count if available
         result_count = None
@@ -134,7 +134,7 @@ class GWASClient(BaseAPIClient):
         Returns:
             Dict with study data
         """
-        data = await self._get(f"/studies/{study_id}")
+        data = await self._request("GET", endpoint=f"/studies/{study_id}")
         return self.format_response(data)
 
     async def search_studies(
@@ -162,7 +162,7 @@ class GWASClient(BaseAPIClient):
         if trait:
             params["efoTraits"] = trait
 
-        data = await self._get("/studies", params=params)
+        data = await self._request("GET", endpoint="/studies", params=params)
         return self.format_response(data, {"page": page})
 
     async def get_trait(self, trait_id: str) -> dict:
@@ -175,7 +175,7 @@ class GWASClient(BaseAPIClient):
         Returns:
             Dict with trait data
         """
-        data = await self._get(f"/efoTraits/{trait_id}")
+        data = await self._request("GET", endpoint=f"/efoTraits/{trait_id}")
         return self.format_response(data)
 
     async def search_traits(
@@ -196,5 +196,5 @@ class GWASClient(BaseAPIClient):
         if query:
             params["q"] = query
 
-        data = await self._get("/efoTraits", params=params)
+        data = await self._request("GET", endpoint="/efoTraits", params=params)
         return self.format_response(data, {"page": page})
