@@ -10,6 +10,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.openfda_client import OpenFDAClient
+from ..models.openfda import OpenFDAAdverseEvent, OpenFDADrugLabel
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,12 @@ async def search_adverse_events(
             page=page,
             api_key=api_key,
         )
+        result = validate_list_response(
+            result,
+            OpenFDAAdverseEvent,
+            list_key="data",
+            api_name="OpenFDA",
+        )
         logger.info("Tool succeeded: search_adverse_events()")
         return result
     except Exception as e:
@@ -83,6 +91,13 @@ async def get_adverse_event(report_id: str, api_key: str | None = None) -> dict:
     logger.info(f"Tool invoked: get_adverse_event(report_id='{report_id}')")
     try:
         result = await openfda_client.get_adverse_event(report_id, api_key=api_key)
+        result = validate_response(
+            result,
+            OpenFDAAdverseEvent,
+            key_field="safetyreportid",
+            api_name="OpenFDA",
+            context=report_id,
+        )
         logger.info(f"Tool succeeded: get_adverse_event(report_id='{report_id}')")
         return result
     except Exception as e:
@@ -131,6 +146,12 @@ async def search_drug_labels(
             page=page,
             api_key=api_key,
         )
+        result = validate_list_response(
+            result,
+            OpenFDADrugLabel,
+            list_key="data",
+            api_name="OpenFDA",
+        )
         logger.info("Tool succeeded: search_drug_labels()")
         return result
     except Exception as e:
@@ -160,6 +181,13 @@ async def get_drug_label(
     try:
         result = await openfda_client.get_drug_label(
             set_id, sections=sections, api_key=api_key
+        )
+        result = validate_response(
+            result,
+            OpenFDADrugLabel,
+            key_field="set_id",
+            api_name="OpenFDA",
+            context=set_id,
         )
         logger.info(f"Tool succeeded: get_drug_label(set_id='{set_id}')")
         return result

@@ -10,6 +10,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.chembl_client import ChEMBLClient
+from ..models.chembl import ChEMBLMolecule, ChEMBLTarget, ChEMBLActivity, ChEMBLMechanism, ChEMBLDrugIndication
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,13 @@ async def get_molecule(molecule_chembl_id: str) -> dict:
     logger.info(f"Tool invoked: get_molecule(molecule_chembl_id='{molecule_chembl_id}')")
     try:
         result = await chembl_client.get_molecule(molecule_chembl_id)
+        result = validate_response(
+            result,
+            ChEMBLMolecule,
+            key_field="molecule_chembl_id",
+            api_name="ChEMBL",
+            context=molecule_chembl_id,
+        )
         logger.info(f"Tool succeeded: get_molecule(molecule_chembl_id='{molecule_chembl_id}')")
         return result
     except Exception as e:
@@ -61,6 +70,12 @@ async def search_molecules(query: str, limit: int = 20) -> dict:
     logger.info(f"Tool invoked: search_molecules(query='{query}', limit={limit})")
     try:
         result = await chembl_client.search_molecules(query, limit)
+        result = validate_list_response(
+            result,
+            ChEMBLMolecule,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(f"Tool succeeded: search_molecules(query='{query}')")
         return result
     except Exception as e:
@@ -84,6 +99,13 @@ async def get_target(target_chembl_id: str) -> dict:
     logger.info(f"Tool invoked: get_target(target_chembl_id='{target_chembl_id}')")
     try:
         result = await chembl_client.get_target(target_chembl_id)
+        result = validate_response(
+            result,
+            ChEMBLTarget,
+            key_field="target_chembl_id",
+            api_name="ChEMBL",
+            context=target_chembl_id,
+        )
         logger.info(f"Tool succeeded: get_target(target_chembl_id='{target_chembl_id}')")
         return result
     except Exception as e:
@@ -108,6 +130,12 @@ async def search_targets(query: str, limit: int = 20) -> dict:
     logger.info(f"Tool invoked: search_targets(query='{query}', limit={limit})")
     try:
         result = await chembl_client.search_targets(query, limit)
+        result = validate_list_response(
+            result,
+            ChEMBLTarget,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(f"Tool succeeded: search_targets(query='{query}')")
         return result
     except Exception as e:
@@ -142,6 +170,12 @@ async def get_activities(
     )
     try:
         result = await chembl_client.get_activities(target_chembl_id, molecule_chembl_id, limit)
+        result = validate_list_response(
+            result,
+            ChEMBLActivity,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info("Tool succeeded: get_activities()")
         return result
     except Exception as e:
@@ -162,6 +196,12 @@ async def get_mechanism(molecule_chembl_id: str) -> dict:
     logger.info(f"Tool invoked: get_mechanism(molecule_chembl_id='{molecule_chembl_id}')")
     try:
         result = await chembl_client.get_mechanism(molecule_chembl_id)
+        result = validate_list_response(
+            result,
+            ChEMBLMechanism,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(f"Tool succeeded: get_mechanism(molecule_chembl_id='{molecule_chembl_id}')")
         return result
     except Exception as e:
@@ -188,6 +228,12 @@ async def find_drugs_by_target(target_chembl_id: str, limit: int = 50) -> dict:
     )
     try:
         result = await chembl_client.find_drugs_by_target(target_chembl_id, limit)
+        result = validate_list_response(
+            result,
+            ChEMBLMolecule,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(f"Tool succeeded: find_drugs_by_target(target_chembl_id='{target_chembl_id}')")
         return result
     except Exception as e:
@@ -214,6 +260,12 @@ async def find_drugs_by_indication(disease_query: str, limit: int = 50) -> dict:
     )
     try:
         result = await chembl_client.find_drugs_by_indication(disease_query, limit)
+        result = validate_list_response(
+            result,
+            ChEMBLDrugIndication,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(f"Tool succeeded: find_drugs_by_indication(disease_query='{disease_query}')")
         return result
     except Exception as e:
@@ -239,6 +291,12 @@ async def get_drug_indications(molecule_chembl_id: str) -> dict:
     )
     try:
         result = await chembl_client.get_drug_indications(molecule_chembl_id)
+        result = validate_list_response(
+            result,
+            ChEMBLDrugIndication,
+            list_key="data",
+            api_name="ChEMBL",
+        )
         logger.info(
             f"Tool succeeded: get_drug_indications(molecule_chembl_id='{molecule_chembl_id}')"
         )

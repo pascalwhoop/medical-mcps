@@ -11,6 +11,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.omim_client import OMIMClient
+from ..models.omim import OMIMEntry
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,15 @@ async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dic
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.get_entry(mim_number, include)
+        result = await client.get_entry(mim_number, include)
+        result = validate_response(
+            result,
+            OMIMEntry,
+            key_field="mimNumber",
+            api_name="OMIM",
+            context=mim_number,
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_entry): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"
@@ -64,7 +74,14 @@ async def search_entries(
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.search_entries(search, include, limit, start)
+        result = await client.search_entries(search, include, limit, start)
+        result = validate_list_response(
+            result,
+            OMIMEntry,
+            list_key="data",
+            api_name="OMIM",
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_entries): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"
@@ -84,7 +101,15 @@ async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> 
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.get_gene(gene_symbol, include)
+        result = await client.get_gene(gene_symbol, include)
+        result = validate_response(
+            result,
+            OMIMEntry,
+            key_field="mimNumber",
+            api_name="OMIM",
+            context=gene_symbol,
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_gene): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"
@@ -112,7 +137,14 @@ async def search_genes(
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.search_genes(search, include, limit, start)
+        result = await client.search_genes(search, include, limit, start)
+        result = validate_list_response(
+            result,
+            OMIMEntry,
+            list_key="data",
+            api_name="OMIM",
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_genes): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"
@@ -132,7 +164,15 @@ async def get_phenotype(mim_number: str, api_key: str, include: str = "text") ->
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.get_phenotype(mim_number, include)
+        result = await client.get_phenotype(mim_number, include)
+        result = validate_response(
+            result,
+            OMIMEntry,
+            key_field="mimNumber",
+            api_name="OMIM",
+            context=mim_number,
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_phenotype): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"
@@ -160,7 +200,14 @@ async def search_phenotypes(
     
     try:
         client = OMIMClient(api_key=api_key)
-        return await client.search_phenotypes(search, include, limit, start)
+        result = await client.search_phenotypes(search, include, limit, start)
+        result = validate_list_response(
+            result,
+            OMIMEntry,
+            list_key="data",
+            api_name="OMIM",
+        )
+        return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_phenotypes): {e}", exc_info=True)
         return f"Error calling OMIM API: {str(e)}"

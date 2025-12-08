@@ -10,6 +10,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.ctg_client import CTGClient
+from ..models.ctg import CTGStudy
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,12 @@ async def search_studies(
             status=status_list,
             page_size=page_size,
         )
+        result = validate_list_response(
+            result,
+            CTGStudy,
+            list_key="studies",
+            api_name="ClinicalTrials.gov",
+        )
         logger.info("Tool succeeded: search_studies()")
         return result
     except Exception as e:
@@ -84,6 +92,13 @@ async def get_study(nct_id: str) -> dict:
     logger.info(f"Tool invoked: get_study(nct_id='{nct_id}')")
     try:
         result = await ctg_client.get_study(nct_id)
+        result = validate_response(
+            result,
+            CTGStudy,
+            key_field="nctId",
+            api_name="ClinicalTrials.gov",
+            context=nct_id,
+        )
         logger.info(f"Tool succeeded: get_study(nct_id='{nct_id}')")
         return result
     except Exception as e:
@@ -117,6 +132,12 @@ async def search_by_condition(
     try:
         result = await ctg_client.search_by_condition(
             condition_query, status=status_list, page_size=page_size
+        )
+        result = validate_list_response(
+            result,
+            CTGStudy,
+            list_key="studies",
+            api_name="ClinicalTrials.gov",
         )
         logger.info(
             f"Tool succeeded: search_by_condition(condition_query='{condition_query}')"
@@ -156,6 +177,12 @@ async def search_by_intervention(
     try:
         result = await ctg_client.search_by_intervention(
             intervention_query, status=status_list, page_size=page_size
+        )
+        result = validate_list_response(
+            result,
+            CTGStudy,
+            list_key="studies",
+            api_name="ClinicalTrials.gov",
         )
         logger.info(
             f"Tool succeeded: search_by_intervention(intervention_query='{intervention_query}')"

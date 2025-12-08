@@ -11,6 +11,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.nci_client import NCIClient
+from ..models.nci import NCITrial
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,12 @@ async def search_trials(
             limit=limit,
             offset=offset,
         )
+        result = validate_list_response(
+            result,
+            NCITrial,
+            list_key="data",
+            api_name="NCI",
+        )
         return result
     except Exception as e:
         logger.error(f"Tool failed: nci_search_trials() - {e}", exc_info=True)
@@ -92,6 +100,13 @@ async def get_trial(trial_id: str, api_key: str | None = None) -> dict:
             client = nci_client
 
         result = await client.get_trial(trial_id)
+        result = validate_response(
+            result,
+            NCITrial,
+            key_field="nct_id",
+            api_name="NCI",
+            context=trial_id,
+        )
         return result
     except Exception as e:
         logger.error(f"Tool failed: nci_get_trial() - {e}", exc_info=True)

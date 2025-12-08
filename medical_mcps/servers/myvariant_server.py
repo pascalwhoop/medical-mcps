@@ -11,6 +11,8 @@ from mcp.server.fastmcp import FastMCP
 from ..api_clients.myvariant_client import MyVariantClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
+from ..models.myvariant import MyVariantVariant
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +53,12 @@ async def search_variants(
             limit=limit,
             offset=offset,
         )
+        result = validate_list_response(
+            result,
+            MyVariantVariant,
+            list_key="data",
+            api_name="MyVariant",
+        )
         return result
     except Exception as e:
         logger.error(f"Tool failed: search_variants() - {e}", exc_info=True)
@@ -64,6 +72,13 @@ async def get_variant(variant_id: str, include_external: bool = False) -> dict:
     try:
         result = await myvariant_client.get_variant(
             variant_id, include_external=include_external
+        )
+        result = validate_response(
+            result,
+            MyVariantVariant,
+            key_field="_id",
+            api_name="MyVariant",
+            context=variant_id,
         )
         return result
     except Exception as e:

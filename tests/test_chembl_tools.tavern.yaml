@@ -25,6 +25,8 @@ stages:
             molecule_chembl_id: "CHEMBL2108041"
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 1
@@ -53,6 +55,8 @@ stages:
             limit: 10
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 2
@@ -81,6 +85,8 @@ stages:
             limit: 10
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 3
@@ -108,6 +114,8 @@ stages:
             molecule_chembl_id: "CHEMBL2108041"
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 4
@@ -136,6 +144,8 @@ stages:
             limit: 20
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 5
@@ -163,6 +173,8 @@ stages:
             molecule_chembl_id: "CHEMBL9999999"
     response:
       status_code: 200
+      strict:
+        - json:off
       json:
         jsonrpc: "2.0"
         id: 6

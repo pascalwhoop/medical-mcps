@@ -10,6 +10,8 @@ from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.pathwaycommons_client import PathwayCommonsClient
+from ..models.pathwaycommons import PathwayCommonsPathway, PathwayCommonsSearchResult
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,14 @@ async def search_pathwaycommons(
 
     try:
         result = await pathwaycommons_client.search(q, type, format, page, datasource)
+        # Only validate JSON responses
+        if format == "json" and isinstance(result, dict):
+            result = validate_list_response(
+                result,
+                PathwayCommonsPathway,
+                list_key="data",
+                api_name="Pathway Commons",
+            )
         logger.info(f"Tool succeeded: search_pathwaycommons(q='{q}', type='{type}')")
         return result
     except Exception as e:
@@ -78,6 +88,15 @@ async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
     logger.info(f"Tool invoked: get_pathway_by_uri(uri='{uri}', format='{format}')")
     try:
         result = await pathwaycommons_client.get_pathway(uri, format)
+        # Only validate JSON responses
+        if format == "json" and isinstance(result, dict):
+            result = validate_response(
+                result,
+                PathwayCommonsPathway,
+                key_field="uri",
+                api_name="Pathway Commons",
+                context=uri,
+            )
         logger.info(f"Tool succeeded: get_pathway_by_uri(uri='{uri}')")
         return result
     except Exception as e:
@@ -113,6 +132,12 @@ async def top_pathways(
     )
     try:
         result = await pathwaycommons_client.top_pathways(gene, datasource, limit)
+        result = validate_list_response(
+            result,
+            PathwayCommonsPathway,
+            list_key="data",
+            api_name="Pathway Commons",
+        )
         logger.info(
             f"Tool succeeded: top_pathways(gene='{gene}', datasource='{datasource}')"
         )
