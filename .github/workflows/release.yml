@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
+      - 'docs/**'
+      - 'knowledge/**'
+      - 'agents/worklog/**'
+      - 'agents/tasks/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
