@@ -6,9 +6,8 @@ Exposes PubMed article search and retrieval tools via MCP at /tools/pubmed/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.pubmed_client import PubMedClient, PubTatorSearchResult
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from .validation import validate_list_response

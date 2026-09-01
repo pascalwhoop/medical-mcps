@@ -9,7 +9,7 @@ import logging
 import re
 from typing import Any
 
-from .base_client import APINotFoundError, BaseAPIClient, log_client_error
+from .base_client import APINotFoundError, APIUpstreamError, BaseAPIClient, log_client_error
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +166,8 @@ class OpenFDAClient(BaseAPIClient):
             )
         except APINotFoundError:
             return self.format_response([], {"total": 0, "page": page, "page_size": limit})
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=[])
         except Exception as e:
             log_client_error(logger, f"Adverse event search failed: {e}", e)
             return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})
@@ -223,6 +225,8 @@ class OpenFDAClient(BaseAPIClient):
             return self.format_response(
                 None, {"error": f"Adverse event report '{report_id}' not found"}
             )
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=None)
         except Exception as e:
             log_client_error(logger, f"Failed to fetch adverse event {report_id}: {e}", e)
             return self.format_response(None, {"error": f"OpenFDA API error: {e!s}"})
@@ -331,6 +335,8 @@ class OpenFDAClient(BaseAPIClient):
             )
         except APINotFoundError:
             return self.format_response([], {"total": 0, "page": page, "page_size": limit})
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=[])
         except Exception as e:
             log_client_error(logger, f"Drug label search failed: {e}", e)
             return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})
@@ -408,6 +414,8 @@ class OpenFDAClient(BaseAPIClient):
             return self.format_response(label_data)
         except APINotFoundError:
             return self.format_response(None, {"error": f"Drug label '{set_id}' not found"})
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=None)
         except Exception as e:
             log_client_error(logger, f"Failed to fetch drug label {set_id}: {e}", e)
             return self.format_response(None, {"error": f"OpenFDA API error: {e!s}"})
@@ -515,6 +523,8 @@ class OpenFDAClient(BaseAPIClient):
             )
         except APINotFoundError:
             return self.format_response([], {"total": 0, "page": page, "page_size": limit})
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=[])
         except Exception as e:
             log_client_error(logger, f"Device event search failed: {e}", e)
             return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})

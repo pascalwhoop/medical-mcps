@@ -7,17 +7,17 @@ registering tools with multiple FastMCP servers simultaneously.
 
 from collections.abc import Callable
 
-from mcp.server.fastmcp import FastMCP
+from .fastmcp_server import MedicalFastMCP
 
 # Create unified FastMCP server
-unified_mcp = FastMCP(
+unified_mcp = MedicalFastMCP(
     "biological-apis-unified",
     stateless_http=True,
     json_response=True,
 )
 
 
-def tool(name: str, servers: list[FastMCP], **kwargs):
+def tool(name: str, servers: list[MedicalFastMCP], **kwargs):
     """
     Decorator that registers a tool with multiple FastMCP servers.
 

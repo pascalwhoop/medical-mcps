@@ -7,8 +7,6 @@ Exposes Every Cure Matrix Knowledge Graph (Neo4j) tools via MCP at /tools/everyc
 import logging
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.biolink_helpers import (
     get_common_node_types,
     get_common_relationship_types,
@@ -26,6 +24,7 @@ from ..api_clients.metapaths import (
 )
 from ..api_clients.neo4j_client import Neo4jClient
 from ..api_clients.safety_validator import check_metapath_safety, check_node_degree
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..settings import settings

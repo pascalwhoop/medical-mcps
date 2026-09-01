@@ -6,9 +6,8 @@ Exposes KEGG API tools via MCP at /tools/kegg/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.kegg_client import KEGGClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 

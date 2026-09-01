@@ -3,9 +3,8 @@
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.uspto_odp_client import USPTOOdpClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 
@@ -30,7 +29,9 @@ async def uspto_odp_get_application(app_num: str, api_key: str = "") -> dict:
     """
     logger.info("Tool invoked: uspto_odp_get_application(app_num=%s)", app_num)
     if not api_key:
-        return {"error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."}
+        return {
+            "error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."
+        }
     try:
         client = USPTOOdpClient()
         result = await client.get_application(app_num, api_key=api_key)
@@ -51,7 +52,9 @@ async def uspto_odp_get_continuity(app_num: str, api_key: str = "") -> dict:
     """
     logger.info("Tool invoked: uspto_odp_get_continuity(app_num=%s)", app_num)
     if not api_key:
-        return {"error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."}
+        return {
+            "error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."
+        }
     try:
         client = USPTOOdpClient()
         result = await client.get_continuity(app_num, api_key=api_key)
@@ -72,7 +75,9 @@ async def uspto_odp_get_assignment(app_num: str, api_key: str = "") -> dict:
     """
     logger.info("Tool invoked: uspto_odp_get_assignment(app_num=%s)", app_num)
     if not api_key:
-        return {"error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."}
+        return {
+            "error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."
+        }
     try:
         client = USPTOOdpClient()
         result = await client.get_assignment(app_num, api_key=api_key)
@@ -93,7 +98,9 @@ async def uspto_odp_get_transactions(app_num: str, api_key: str = "") -> dict:
     """
     logger.info("Tool invoked: uspto_odp_get_transactions(app_num=%s)", app_num)
     if not api_key:
-        return {"error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."}
+        return {
+            "error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."
+        }
     try:
         client = USPTOOdpClient()
         result = await client.get_transactions(app_num, api_key=api_key)
@@ -135,7 +142,9 @@ async def uspto_odp_search_applications(
         inventor_name,
     )
     if not api_key:
-        return {"error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."}
+        return {
+            "error": "api_key is required. Register at https://data.uspto.gov and visit 'My ODP'."
+        }
     try:
         client = USPTOOdpClient()
         result = await client.search_applications(

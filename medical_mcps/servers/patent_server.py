@@ -3,9 +3,8 @@
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.patent_client import PatentClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 

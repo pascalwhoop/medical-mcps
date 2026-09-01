@@ -6,9 +6,8 @@ Exposes ChEMBL API tools via MCP at /tools/chembl/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.chembl_client import ChEMBLClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.chembl import (

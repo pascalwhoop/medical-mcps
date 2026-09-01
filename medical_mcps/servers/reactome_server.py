@@ -6,9 +6,8 @@ Exposes Reactome API tools via MCP at /tools/reactome/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.reactome_client import ReactomeClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.reactome import ReactomePathway

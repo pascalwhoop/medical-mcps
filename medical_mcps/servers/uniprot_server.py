@@ -6,10 +6,10 @@ Exposes UniProt API tools via MCP at /tools/uniprot/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
 
 from ..api_clients.uniprot_client import UniProtClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.uniprot import UniProtProtein

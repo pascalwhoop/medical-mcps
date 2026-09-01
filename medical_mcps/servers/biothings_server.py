@@ -6,11 +6,10 @@ Exposes MyGene, MyDisease, and MyChem tools via MCP at /tools/biothings/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.mychem_client import MyChemClient
 from ..api_clients.mydisease_client import MyDiseaseClient
 from ..api_clients.mygene_client import MyGeneClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.biothings import MyChemDrug, MyDiseaseDisease, MyGeneGene

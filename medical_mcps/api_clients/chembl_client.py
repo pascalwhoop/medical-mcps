@@ -8,8 +8,6 @@ import asyncio
 import logging
 from typing import Any
 
-from chembl_webresource_client.new_client import new_client
-
 from .base_client import BaseAPIClient
 
 logger = logging.getLogger(__name__)
@@ -31,7 +29,16 @@ class ChEMBLClient(BaseAPIClient):
             timeout=60.0,  # ChEMBL can be slow
             rate_limit_delay=0.5,  # Conservative rate limiting
         )
-        self.chembl_client = new_client
+        self._chembl_client = None
+
+    @property
+    def chembl_client(self):
+        """Lazy-load the ChEMBL webresource client to avoid import-time network calls."""
+        if self._chembl_client is None:
+            from chembl_webresource_client.new_client import new_client
+
+            self._chembl_client = new_client
+        return self._chembl_client
 
     def format_response(
         self,

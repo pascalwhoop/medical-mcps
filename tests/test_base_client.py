@@ -9,7 +9,7 @@ import httpx
 import pytest
 from hishel.httpx import AsyncCacheClient
 
-from medical_mcps.api_clients.base_client import APINotFoundError, BaseAPIClient
+from medical_mcps.api_clients.base_client import APINotFoundError, APIUpstreamError, BaseAPIClient
 
 # Disable logging during tests
 logging.getLogger("medical_mcps.api_clients.base_client").setLevel(logging.CRITICAL)
@@ -318,6 +318,27 @@ class TestBaseAPIClientRequest:
             await client._request("GET", endpoint="/test")
         assert "TestAPI API error: HTTP 400" in str(exc_info.value)
         assert "Invalid input" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_request_http_status_error_upstream(self, client, mock_response):
+        """5xx responses raise APIUpstreamError."""
+        mock_client = AsyncMock()
+        client._client = mock_client
+        error = httpx.HTTPStatusError(
+            "Bad Gateway",
+            request=MagicMock(),
+            response=mock_response(
+                status_code=502,
+                reason_phrase="Bad Gateway",
+                json_data={"error": "upstream down"},
+            ),
+        )
+        mock_client.get.side_effect = error
+
+        with pytest.raises(APIUpstreamError) as exc_info:
+            await client._request("GET", endpoint="/test")
+        assert exc_info.value.status_code == 502
+        assert "TestAPI API error: HTTP 502" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_request_http_error(self, client):

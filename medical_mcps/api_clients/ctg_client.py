@@ -16,7 +16,7 @@ from typing import Any
 import requests
 from hishel.requests import CacheAdapter
 
-from .base_client import BaseAPIClient
+from .base_client import APIUpstreamError, BaseAPIClient
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,10 @@ class CTGClient(BaseAPIClient):
             logger.info(f"HTTP Response: {response.status_code} {response.reason}")
             return response.json()
         except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason}")
+            if e.response.status_code >= 500:
+                logger.warning("HTTP Response: %s %s", e.response.status_code, e.response.reason)
+            else:
+                logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason}")
             error_msg = f"{self.api_name} API error: HTTP {e.response.status_code}"
             try:
                 error_detail = e.response.json()
@@ -103,6 +106,12 @@ class CTGClient(BaseAPIClient):
                         error_msg += f" - {e!s}"
             except Exception:
                 error_msg += f" - {e!s}"
+            if e.response.status_code >= 500:
+                raise APIUpstreamError(
+                    error_msg,
+                    status_code=e.response.status_code,
+                    api_name=self.api_name,
+                ) from e
             raise Exception(error_msg) from e
         except requests.exceptions.RequestException as e:
             logger.error(f"HTTP Error: {e!s}")
@@ -271,6 +280,8 @@ class CTGClient(BaseAPIClient):
         try:
             data = await self._get(f"/studies/{nct_id}", params=params)
             return self.format_response(data)
+        except APIUpstreamError as e:
+            return self.format_upstream_error(e, data=None)
         except Exception as e:
             if "404" in str(e) or "Not Found" in str(e):
                 logger.info("Study %s not found", nct_id)

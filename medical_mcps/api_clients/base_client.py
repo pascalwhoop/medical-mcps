@@ -33,6 +33,17 @@ class APINotFoundError(Exception):
     """Raised when an upstream API returns HTTP 404."""
 
 
+class APIUpstreamError(Exception):
+    """Raised when an upstream API is unavailable or returns a server error."""
+
+    def __init__(
+        self, message: str, *, status_code: int | None = None, api_name: str | None = None
+    ):
+        super().__init__(message)
+        self.status_code = status_code
+        self.api_name = api_name
+
+
 def is_not_found_error(exc: BaseException) -> bool:
     """True when *exc* represents an upstream not-found response."""
     return isinstance(exc, APINotFoundError) or (
@@ -40,10 +51,20 @@ def is_not_found_error(exc: BaseException) -> bool:
     )
 
 
+def is_upstream_error(exc: BaseException) -> bool:
+    """True when *exc* represents an upstream outage or 5xx response."""
+    if isinstance(exc, APIUpstreamError):
+        return True
+    message = str(exc)
+    return any(token in message for token in ("HTTP 502", "HTTP 503", "HTTP 504", "HTTP 500"))
+
+
 def log_client_error(logger_: logging.Logger, message: str, exc: BaseException) -> None:
-    """Log client failures without sending expected not-found cases to Sentry."""
+    """Log client failures without sending expected cases to Sentry."""
     if is_not_found_error(exc):
         logger_.info(message)
+    elif is_upstream_error(exc):
+        logger_.warning(message)
     else:
         logger_.error(message, exc_info=True)
 
@@ -268,11 +289,25 @@ class BaseAPIClient(ABC):
                     e.response.reason_phrase,
                 )
                 raise APINotFoundError(self._extract_error_message(e)) from e
+            if e.response.status_code >= 500:
+                logger.warning(
+                    "HTTP Response: %s %s",
+                    e.response.status_code,
+                    e.response.reason_phrase,
+                )
+                raise APIUpstreamError(
+                    self._extract_error_message(e),
+                    status_code=e.response.status_code,
+                    api_name=self.api_name,
+                ) from e
             logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}")
             raise Exception(self._extract_error_message(e)) from e
         except httpx.HTTPError as e:
-            logger.error(f"HTTP Error: {e!s}")
-            raise Exception(f"{self.api_name} API error: {e!s}") from e
+            logger.warning(f"HTTP Error: {e!s}")
+            raise APIUpstreamError(
+                f"{self.api_name} API error: {e!s}",
+                api_name=self.api_name,
+            ) from e
         except Exception as e:
             if self._is_cache_error(e):
                 return await self._handle_cache_error_retry(make_request)
@@ -285,6 +320,24 @@ class BaseAPIClient(ABC):
         if metadata:
             return {"data": data, "metadata": metadata}
         return data
+
+    def format_upstream_error(
+        self,
+        exc: APIUpstreamError,
+        data: dict | list | str | None = None,
+    ) -> dict:
+        from ..errors import upstream_error_metadata
+
+        if data is None:
+            data = []
+        return self.format_response(
+            data,
+            upstream_error_metadata(
+                api_name=exc.api_name or self.api_name,
+                detail=str(exc),
+                status_code=exc.status_code,
+            ),
+        )
 
     async def close(self):
         """Close the HTTP client."""

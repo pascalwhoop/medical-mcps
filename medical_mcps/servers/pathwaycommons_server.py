@@ -6,9 +6,8 @@ Exposes Pathway Commons API tools via MCP at /tools/pathwaycommons/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.pathwaycommons_client import PathwayCommonsClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.pathwaycommons import PathwayCommonsPathway

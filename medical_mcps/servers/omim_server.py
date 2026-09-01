@@ -7,9 +7,8 @@ API key MUST be provided by the MCP client with each request
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.omim_client import OMIMClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.omim import OMIMEntry

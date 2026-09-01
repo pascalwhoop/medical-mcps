@@ -6,6 +6,8 @@ Reduces code duplication across tool functions.
 import logging
 from typing import Any
 
+from ..errors import is_transient_neo4j_error
+
 logger = logging.getLogger(__name__)
 
 API_SOURCE = "Every Cure Matrix Knowledge Graph"
@@ -46,7 +48,10 @@ def handle_neo4j_error(e: Exception, db_name: str, tool_name: str) -> dict[str, 
     Returns:
         Standardized error response dict
     """
-    logger.error(f"Tool failed: {tool_name}() - {e}", exc_info=True)
+    if is_transient_neo4j_error(e):
+        logger.warning("Tool failed: %s() - %s", tool_name, e)
+    else:
+        logger.error(f"Tool failed: {tool_name}() - {e}", exc_info=True)
     metadata = {"database": db_name} if db_name else {}
     return neo4j_response(
         data=None,

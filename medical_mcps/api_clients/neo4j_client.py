@@ -10,6 +10,7 @@ from typing import Any
 
 from neo4j import GraphDatabase
 
+from ..errors import is_transient_neo4j_error
 from ..settings import settings
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,24 @@ class Neo4jClient:
         self.database = database or settings.everycure_kg_default_database
         self._driver: Any | None = None
 
+    def _reset_driver(self) -> None:
+        if self._driver is not None:
+            try:
+                self._driver.close()
+            except Exception:
+                pass
+        self._driver = None
+
+    def _run_with_reconnect(self, func):
+        try:
+            return func()
+        except Exception as exc:
+            if is_transient_neo4j_error(exc):
+                logger.warning("Neo4j connection error, retrying once: %s", exc)
+                self._reset_driver()
+                return func()
+            raise
+
     def _get_driver(self):
         """Get or create Neo4j driver instance"""
         if self._driver is None:
@@ -77,44 +96,48 @@ class Neo4jClient:
         Returns:
             List of records as dictionaries
         """
-        driver = self._get_driver()
-        db_name = database or self.database
-        with driver.session(database=db_name) as session:
-            result = session.run(query, parameters or {})
-            records = []
-            for record in result:
-                # Convert Neo4j Record to dict
-                record_dict = {}
-                for key in record.keys():
-                    value = record[key]
-                    # Convert Neo4j types to Python native types
-                    if hasattr(value, "__class__"):
-                        # Handle Neo4j Node, Relationship, Path objects
-                        if value.__class__.__name__ == "Node":
-                            record_dict[key] = {
-                                "id": value.id,
-                                "labels": list(value.labels),
-                                "properties": dict(value.items()),
-                            }
-                        elif value.__class__.__name__ == "Relationship":
-                            record_dict[key] = {
-                                "id": value.id,
-                                "type": value.type,
-                                "start_node": value.start_node.id,
-                                "end_node": value.end_node.id,
-                                "properties": dict(value.items()),
-                            }
-                        elif value.__class__.__name__ == "Path":
-                            record_dict[key] = {
-                                "nodes": [n.id for n in value.nodes],
-                                "relationships": [r.id for r in value.relationships],
-                            }
+
+        def run() -> list[dict]:
+            driver = self._get_driver()
+            db_name = database or self.database
+            with driver.session(database=db_name) as session:
+                result = session.run(query, parameters or {})
+                records = []
+                for record in result:
+                    # Convert Neo4j Record to dict
+                    record_dict = {}
+                    for key in record.keys():
+                        value = record[key]
+                        # Convert Neo4j types to Python native types
+                        if hasattr(value, "__class__"):
+                            # Handle Neo4j Node, Relationship, Path objects
+                            if value.__class__.__name__ == "Node":
+                                record_dict[key] = {
+                                    "id": value.id,
+                                    "labels": list(value.labels),
+                                    "properties": dict(value.items()),
+                                }
+                            elif value.__class__.__name__ == "Relationship":
+                                record_dict[key] = {
+                                    "id": value.id,
+                                    "type": value.type,
+                                    "start_node": value.start_node.id,
+                                    "end_node": value.end_node.id,
+                                    "properties": dict(value.items()),
+                                }
+                            elif value.__class__.__name__ == "Path":
+                                record_dict[key] = {
+                                    "nodes": [n.id for n in value.nodes],
+                                    "relationships": [r.id for r in value.relationships],
+                                }
+                            else:
+                                record_dict[key] = value
                         else:
                             record_dict[key] = value
-                    else:
-                        record_dict[key] = value
-                records.append(record_dict)
-            return records
+                    records.append(record_dict)
+                return records
+
+        return self._run_with_reconnect(run)
 
     async def execute_cypher(
         self,
@@ -156,26 +179,24 @@ class Neo4jClient:
 
     def _get_schema_sync(self, database: str | None = None) -> dict[str, Any]:
         """Get database schema synchronously"""
-        driver = self._get_driver()
-        db_name = database or self.database
-        with driver.session(database=db_name) as session:
-            # Get node labels
-            labels_result = session.run("CALL db.labels()")
-            labels = [record["label"] for record in labels_result]
 
-            # Get relationship types
-            rel_types_result = session.run("CALL db.relationshipTypes()")
-            rel_types = [record["relationshipType"] for record in rel_types_result]
+        def run() -> dict[str, Any]:
+            driver = self._get_driver()
+            db_name = database or self.database
+            with driver.session(database=db_name) as session:
+                labels_result = session.run("CALL db.labels()")
+                labels = [record["label"] for record in labels_result]
+                rel_types_result = session.run("CALL db.relationshipTypes()")
+                rel_types = [record["relationshipType"] for record in rel_types_result]
+                prop_keys_result = session.run("CALL db.propertyKeys()")
+                prop_keys = [record["propertyKey"] for record in prop_keys_result]
+                return {
+                    "labels": labels,
+                    "relationship_types": rel_types,
+                    "property_keys": prop_keys,
+                }
 
-            # Get property keys
-            prop_keys_result = session.run("CALL db.propertyKeys()")
-            prop_keys = [record["propertyKey"] for record in prop_keys_result]
-
-            return {
-                "labels": labels,
-                "relationship_types": rel_types,
-                "property_keys": prop_keys,
-            }
+        return self._run_with_reconnect(run)
 
     async def get_schema(self, database: str | None = None) -> dict[str, Any]:
         """
@@ -211,21 +232,21 @@ class Neo4jClient:
 
     def _get_stats_sync(self, database: str | None = None) -> dict[str, Any]:
         """Get database statistics synchronously"""
-        driver = self._get_driver()
-        db_name = database or self.database
-        with driver.session(database=db_name) as session:
-            # Get node count
-            node_count_result = session.run("MATCH (n) RETURN count(n) as count")
-            node_count = node_count_result.single()["count"]
 
-            # Get relationship count
-            rel_count_result = session.run("MATCH ()-[r]->() RETURN count(r) as count")
-            rel_count = rel_count_result.single()["count"]
+        def run() -> dict[str, Any]:
+            driver = self._get_driver()
+            db_name = database or self.database
+            with driver.session(database=db_name) as session:
+                node_count_result = session.run("MATCH (n) RETURN count(n) as count")
+                node_count = node_count_result.single()["count"]
+                rel_count_result = session.run("MATCH ()-[r]->() RETURN count(r) as count")
+                rel_count = rel_count_result.single()["count"]
+                return {
+                    "node_count": node_count,
+                    "relationship_count": rel_count,
+                }
 
-            return {
-                "node_count": node_count,
-                "relationship_count": rel_count,
-            }
+        return self._run_with_reconnect(run)
 
     async def get_stats(self, database: str | None = None) -> dict[str, Any]:
         """

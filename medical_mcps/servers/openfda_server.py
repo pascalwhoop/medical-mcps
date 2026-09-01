@@ -6,9 +6,8 @@ Exposes OpenFDA tools via MCP at /tools/openfda/mcp
 
 import logging
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.openfda_client import OpenFDAClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.openfda import OpenFDAAdverseEvent, OpenFDADrugLabel

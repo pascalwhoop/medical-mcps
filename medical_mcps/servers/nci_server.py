@@ -7,9 +7,8 @@ Exposes NCI trial search tools via MCP at /tools/nci/mcp
 import logging
 import os
 
-from mcp.server.fastmcp import FastMCP
-
 from ..api_clients.nci_client import NCIClient
+from ..fastmcp_server import MedicalFastMCP as FastMCP
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.nci import NCITrial
