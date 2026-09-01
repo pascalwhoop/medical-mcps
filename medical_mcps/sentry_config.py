@@ -6,7 +6,6 @@ Must be imported and initialized BEFORE any @mcp.tool decorators are registered
 
 import logging
 import os
-from typing import Any
 
 import sentry_sdk
 from sentry_sdk.integrations.asyncio import AsyncioIntegration
@@ -19,47 +18,16 @@ from .settings import settings
 log = logging.getLogger(__name__)
 
 
-def _should_drop_sentry_event(event: dict[str, Any]) -> bool:
-    message = ""
-    if event.get("logentry", {}).get("message"):
-        message = str(event["logentry"]["message"])
-    elif event.get("message"):
-        message = str(event["message"])
-
-    values = event.get("exception", {}).get("values") or []
-    for value in values:
-        message = f"{message} {value.get('type', '')} {value.get('value', '')}"
-
-    lowered = message.lower()
-    drop_markers = (
-        "unknown tool:",
-        "error executing tool",
-        "validation error for",
-        "field required",
-        "http 404",
-        "http 502",
-        "http 503",
-        "http 504",
-        "upstream service error",
-        "defunct connection",
-        "routing information",
-        "sessionexpired",
-    )
-    return any(marker in lowered for marker in drop_markers)
-
-
-def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
-    if _should_drop_sentry_event(event):
-        return None
-    return event
-
-
 def init_sentry() -> None:
     """
     Initialize Sentry if DSN is provided.
 
     This must be called BEFORE any @mcp.tool decorators are registered
     to ensure proper instrumentation of MCP tools.
+
+    Expected client/upstream failures are handled at the source (structured tool
+    responses, no exc_info logging) so they should not reach Sentry. Only
+    genuine server bugs and unexpected failures are reported here.
     """
     if not settings.sentry_dsn:
         log.debug("Sentry DSN not provided, skipping Sentry initialization")
@@ -79,7 +47,6 @@ def init_sentry() -> None:
         # Set profile_lifecycle to "trace" to automatically run the profiler
         # when there is an active transaction
         profile_lifecycle=settings.sentry_profile_lifecycle,
-        before_send=_before_send,
         integrations=[
             # MCP integration - tracks tool executions, prompts, resources
             # IMPORTANT: This must be initialized before @mcp.tool decorators
