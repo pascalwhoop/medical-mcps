@@ -36,7 +36,7 @@ from datetime import date
 from html.parser import HTMLParser
 from typing import Any
 
-from .base_client import BaseAPIClient
+from .base_client import BaseAPIClient, log_client_error
 from .patent_client import (
     _get_exclusivities,
     _get_products,
@@ -530,9 +530,11 @@ class FDAOrphanClient(BaseAPIClient):
                 },
             }
         except Exception as e:
-            logger.error("FDA drugsfda lookup failed: %s", e, exc_info=True)
+            log_client_error(logger, f"FDA drugsfda lookup failed: {e}", e)
             return {
                 "api_source": "FDA_drugsfda",
                 "data": [],
-                "metadata": {"error": f"FDA API error: {e!s}"},
+                "metadata": {
+                    "error": "No matches found" if "HTTP 404" in str(e) else f"FDA API error: {e!s}"
+                },
             }

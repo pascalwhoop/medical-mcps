@@ -53,5 +53,8 @@ workbench/**
 .ai/
 .agents/
 
-# Downloaded data (FDA Orange Book flat files)
-data/orangebook/
+# Local data artifacts (IP diligence skill, run outputs, downloaded files)
+data/
+
+# Built skill packages
+dist/

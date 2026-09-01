@@ -26,6 +26,23 @@ PUBTATOR3_AUTOCOMPLETE_URL = f"{PUBTATOR3_BASE_URL}/entity/autocomplete/"
 EUROPE_PMC_BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
 
+def _loads_json_text(text: str) -> Any | None:
+    stripped = (text or "").strip()
+    if not stripped:
+        return None
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+
+
+def _pubmed_unavailable_message(text: str) -> str | None:
+    lowered = (text or "").lower()
+    if "updating the database" in lowered:
+        return "PubMed is temporarily unavailable while the database is being updated"
+    return None
+
+
 class EntityRequest(BaseModel):
     """Request for entity autocomplete."""
 
@@ -278,7 +295,15 @@ class PubMedClient(BaseAPIClient):
             response_text = await self._request(
                 "GET", url=PUBTATOR3_SEARCH_URL, params=params, return_json=False
             )
-            response = json.loads(response_text)
+            unavailable = _pubmed_unavailable_message(response_text)
+            if unavailable:
+                return self.format_response([], {"error": unavailable})
+            response = _loads_json_text(response_text)
+            if response is None:
+                return self.format_response(
+                    [],
+                    {"error": "PubMed API returned an empty or non-JSON response"},
+                )
 
             # Parse response
             if isinstance(response, dict):
@@ -313,6 +338,13 @@ class PubMedClient(BaseAPIClient):
             return self.format_response([], {"error": "Unexpected response format"})
 
         except Exception as e:
+            if "updating the Database" in str(e):
+                return self.format_response(
+                    [],
+                    {
+                        "error": "PubMed is temporarily unavailable while the database is being updated"
+                    },
+                )
             logger.error(f"Search failed: {e}", exc_info=True)
             return self.format_response([], {"error": f"PubMed API error: {e!s}"})
 
@@ -409,7 +441,16 @@ class PubMedClient(BaseAPIClient):
                 timeout=self.timeout,
             )
             response_text.raise_for_status()
-            response = json.loads(response_text.text)
+            body = response_text.text
+            unavailable = _pubmed_unavailable_message(body)
+            if unavailable:
+                return self.format_response(None, {"error": unavailable})
+            response = _loads_json_text(body)
+            if response is None:
+                return self.format_response(
+                    None,
+                    {"error": "PubMed API returned an empty or non-JSON response"},
+                )
 
             if isinstance(response, dict):
                 articles = response.get("PubTator3", [])
@@ -432,6 +473,13 @@ class PubMedClient(BaseAPIClient):
 
             return self.format_response(None, {"error": f"Article {pmid} not found"})
         except Exception as e:
+            if "updating the Database" in str(e):
+                return self.format_response(
+                    None,
+                    {
+                        "error": "PubMed is temporarily unavailable while the database is being updated"
+                    },
+                )
             logger.error(f"Failed to fetch article {pmid}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"PubMed API error: {e!s}"})
 

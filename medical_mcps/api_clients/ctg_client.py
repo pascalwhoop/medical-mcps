@@ -272,10 +272,10 @@ class CTGClient(BaseAPIClient):
             data = await self._get(f"/studies/{nct_id}", params=params)
             return self.format_response(data)
         except Exception as e:
-            logger.error(f"Error getting study {nct_id}: {e}", exc_info=True)
-            # Check if it's a 404
             if "404" in str(e) or "Not Found" in str(e):
+                logger.info("Study %s not found", nct_id)
                 return self.format_response(None, {"error": f"Study {nct_id} not found"})
+            logger.error(f"Error getting study {nct_id}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"ClinicalTrials.gov API error: {e!s}"})
 
     async def search_by_condition(

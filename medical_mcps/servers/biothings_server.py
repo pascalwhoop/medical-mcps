@@ -30,17 +30,24 @@ biothings_mcp = FastMCP(
 
 
 @medmcps_tool(name="mygene_get_gene", servers=[biothings_mcp, unified_mcp])
-async def mygene_get_gene(gene_id_or_symbol: str, fields: list[str] | None = None) -> dict:
+async def mygene_get_gene(
+    gene_id_or_symbol: str | None = None,
+    gene_symbol: str | None = None,
+    fields: list[str] | None = None,
+) -> dict:
     """Get gene information from MyGene.info by ID or symbol."""
-    logger.info(f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{gene_id_or_symbol}')")
+    resolved_gene = gene_id_or_symbol or gene_symbol
+    if not resolved_gene:
+        return {"api_source": "MyGene", "data": None, "error": "gene_id_or_symbol is required"}
+    logger.info(f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{resolved_gene}')")
     try:
-        result = await mygene_client.get_gene(gene_id_or_symbol, fields=fields)
+        result = await mygene_client.get_gene(resolved_gene, fields=fields)
         result = validate_response(
             result,
             MyGeneGene,
             key_field="_id",
             api_name="MyGene",
-            context=gene_id_or_symbol,
+            context=resolved_gene,
         )
         return result
     except Exception as e:

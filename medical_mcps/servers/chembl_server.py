@@ -220,64 +220,99 @@ async def get_mechanism(molecule_chembl_id: str) -> dict:
 
 
 @medmcps_tool(name="chembl_find_drugs_by_target", servers=[chembl_mcp, unified_mcp])
-async def find_drugs_by_target(target_chembl_id: str, limit: int = 50) -> dict:
+async def find_drugs_by_target(
+    target_chembl_id: str | None = None,
+    target_name: str | None = None,
+    limit: int = 50,
+    max_results: int | None = None,
+) -> dict:
     """Find all drugs/compounds targeting a specific protein.
 
     Args:
         target_chembl_id: ChEMBL target ID
+        target_name: Target name or synonym to resolve when target_chembl_id is omitted
         limit: Maximum number of results (default: 50)
+        max_results: Alias for limit
 
     Returns:
         JSON with list of molecules that target the specified protein
     """
+    resolved_limit = max_results if max_results is not None else limit
+    resolved_id = target_chembl_id
+    if not resolved_id and target_name:
+        search = await chembl_client.search_targets(target_name, limit=1)
+        targets = search.get("data", []) if isinstance(search, dict) else []
+        if targets and isinstance(targets[0], dict):
+            resolved_id = targets[0].get("target_chembl_id")
+    if not resolved_id:
+        return {
+            "api_source": "ChEMBL",
+            "data": [],
+            "metadata": {"error": "Either target_chembl_id or target_name is required"},
+        }
     logger.info(
-        f"Tool invoked: find_drugs_by_target(target_chembl_id='{target_chembl_id}', limit={limit})"
+        f"Tool invoked: find_drugs_by_target(target_chembl_id='{resolved_id}', limit={resolved_limit})"
     )
     try:
-        result = await chembl_client.find_drugs_by_target(target_chembl_id, limit)
+        result = await chembl_client.find_drugs_by_target(resolved_id, resolved_limit)
         result = validate_list_response(
             result,
             ChEMBLMolecule,
             list_key="data",
             api_name="ChEMBL",
         )
-        logger.info(f"Tool succeeded: find_drugs_by_target(target_chembl_id='{target_chembl_id}')")
+        logger.info(f"Tool succeeded: find_drugs_by_target(target_chembl_id='{resolved_id}')")
         return result
     except Exception as e:
         logger.error(
-            f"Tool failed: find_drugs_by_target(target_chembl_id='{target_chembl_id}') - {e}",
+            f"Tool failed: find_drugs_by_target(target_chembl_id='{resolved_id}') - {e}",
             exc_info=True,
         )
         return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_find_drugs_by_indication", servers=[chembl_mcp, unified_mcp])
-async def find_drugs_by_indication(disease_query: str, limit: int = 50) -> dict:
+async def find_drugs_by_indication(
+    disease_query: str | None = None,
+    indication: str | None = None,
+    limit: int = 50,
+    max_results: int | None = None,
+) -> dict:
     """Find all drugs for a disease/indication.
 
     Args:
         disease_query: Disease name or MeSH heading (e.g., 'Multiple Sclerosis')
+        indication: Alias for disease_query
         limit: Maximum number of results (default: 50)
+        max_results: Alias for limit
 
     Returns:
         JSON with list of drug-indication pairs
     """
+    resolved_query = disease_query or indication
+    resolved_limit = max_results if max_results is not None else limit
+    if not resolved_query:
+        return {
+            "api_source": "ChEMBL",
+            "data": [],
+            "metadata": {"error": "Either disease_query or indication is required"},
+        }
     logger.info(
-        f"Tool invoked: find_drugs_by_indication(disease_query='{disease_query}', limit={limit})"
+        f"Tool invoked: find_drugs_by_indication(disease_query='{resolved_query}', limit={resolved_limit})"
     )
     try:
-        result = await chembl_client.find_drugs_by_indication(disease_query, limit)
+        result = await chembl_client.find_drugs_by_indication(resolved_query, resolved_limit)
         result = validate_list_response(
             result,
             ChEMBLDrugIndication,
             list_key="data",
             api_name="ChEMBL",
         )
-        logger.info(f"Tool succeeded: find_drugs_by_indication(disease_query='{disease_query}')")
+        logger.info(f"Tool succeeded: find_drugs_by_indication(disease_query='{resolved_query}')")
         return result
     except Exception as e:
         logger.error(
-            f"Tool failed: find_drugs_by_indication(disease_query='{disease_query}') - {e}",
+            f"Tool failed: find_drugs_by_indication(disease_query='{resolved_query}') - {e}",
             exc_info=True,
         )
         return f"Error calling ChEMBL API: {e!s}"

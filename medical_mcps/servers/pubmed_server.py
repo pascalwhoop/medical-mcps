@@ -81,24 +81,39 @@ async def search_articles(
 
 
 @medmcps_tool(name="pubmed_get_article", servers=[pubmed_mcp, unified_mcp])
-async def get_article(pmid_or_doi: str, full: bool = False) -> dict:
+async def get_article(
+    pmid_or_doi: str | None = None,
+    pmid: str | None = None,
+    full: bool = False,
+    include_full_text: bool | None = None,
+) -> dict:
     """Get detailed article information by PMID or DOI.
 
     Args:
         pmid_or_doi: PubMed ID (numeric, e.g., '34397683') or DOI (e.g., '10.1101/2024.01.20.23288905')
+        pmid: Alias for pmid_or_doi when passing a numeric PubMed ID
         full: Whether to fetch full text (default: False, returns abstract only)
+        include_full_text: Alias for full
 
     Returns:
         JSON with article details including title, abstract, authors, journal, date, and optionally full text
     """
-    logger.info(f"Tool invoked: get_article(pmid_or_doi='{pmid_or_doi}', full={full})")
+    resolved_id = pmid_or_doi or pmid
+    if not resolved_id:
+        return {
+            "api_source": "PubMed",
+            "data": None,
+            "error": "pmid_or_doi is required",
+        }
+    resolved_full = include_full_text if include_full_text is not None else full
+    logger.info(f"Tool invoked: get_article(pmid_or_doi='{resolved_id}', full={resolved_full})")
     try:
-        result = await pubmed_client.get_article(pmid_or_doi, full=full)
-        logger.info(f"Tool succeeded: get_article(pmid_or_doi='{pmid_or_doi}')")
+        result = await pubmed_client.get_article(resolved_id, full=resolved_full)
+        logger.info(f"Tool succeeded: get_article(pmid_or_doi='{resolved_id}')")
         return result
     except Exception as e:
         logger.error(
-            f"Tool failed: get_article(pmid_or_doi='{pmid_or_doi}') - {e}",
+            f"Tool failed: get_article(pmid_or_doi='{resolved_id}') - {e}",
             exc_info=True,
         )
         return {

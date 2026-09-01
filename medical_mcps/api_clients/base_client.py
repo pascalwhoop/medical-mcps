@@ -28,6 +28,26 @@ from ..settings import settings
 
 logger = logging.getLogger(__name__)
 
+
+class APINotFoundError(Exception):
+    """Raised when an upstream API returns HTTP 404."""
+
+
+def is_not_found_error(exc: BaseException) -> bool:
+    """True when *exc* represents an upstream not-found response."""
+    return isinstance(exc, APINotFoundError) or (
+        isinstance(exc, Exception) and "HTTP 404" in str(exc)
+    )
+
+
+def log_client_error(logger_: logging.Logger, message: str, exc: BaseException) -> None:
+    """Log client failures without sending expected not-found cases to Sentry."""
+    if is_not_found_error(exc):
+        logger_.info(message)
+    else:
+        logger_.error(message, exc_info=True)
+
+
 # Default cache directory - use per-process subdirectory to avoid SQLite locking issues
 # Override via MEDICAL_MCPS_CACHE_DIR env var (useful for tests or non-standard home dirs)
 _process_id = os.getpid()
@@ -241,6 +261,13 @@ class BaseAPIClient(ABC):
         try:
             return await make_request()
         except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                logger.info(
+                    "HTTP Response: %s %s",
+                    e.response.status_code,
+                    e.response.reason_phrase,
+                )
+                raise APINotFoundError(self._extract_error_message(e)) from e
             logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}")
             raise Exception(self._extract_error_message(e)) from e
         except httpx.HTTPError as e:

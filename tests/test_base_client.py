@@ -9,7 +9,7 @@ import httpx
 import pytest
 from hishel.httpx import AsyncCacheClient
 
-from medical_mcps.api_clients.base_client import BaseAPIClient
+from medical_mcps.api_clients.base_client import APINotFoundError, BaseAPIClient
 
 # Disable logging during tests
 logging.getLogger("medical_mcps.api_clients.base_client").setLevel(logging.CRITICAL)
@@ -278,35 +278,46 @@ class TestBaseAPIClientRequest:
         )
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "status_code,reason_phrase,error_field",
-        [
-            (404, "Not Found", "Resource not found"),
-            (400, "Bad Request", "Invalid input"),
-        ],
-    )
-    async def test_request_http_status_error(
-        self, client, mock_response, status_code, reason_phrase, error_field
-    ):
-        """Test request with HTTP status error"""
+    async def test_request_http_status_error_not_found(self, client, mock_response):
+        """404 responses raise APINotFoundError."""
         mock_client = AsyncMock()
         client._client = mock_client
-
         error = httpx.HTTPStatusError(
-            reason_phrase,
+            "Not Found",
             request=MagicMock(),
             response=mock_response(
-                status_code=status_code,
-                reason_phrase=reason_phrase,
-                json_data={"error": error_field},
+                status_code=404,
+                reason_phrase="Not Found",
+                json_data={"error": "Resource not found"},
+            ),
+        )
+        mock_client.get.side_effect = error
+
+        with pytest.raises(APINotFoundError) as exc_info:
+            await client._request("GET", endpoint="/test")
+        assert "TestAPI API error: HTTP 404" in str(exc_info.value)
+        assert "Resource not found" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_request_http_status_error_bad_request(self, client, mock_response):
+        """Non-404 HTTP errors still raise generic Exception."""
+        mock_client = AsyncMock()
+        client._client = mock_client
+        error = httpx.HTTPStatusError(
+            "Bad Request",
+            request=MagicMock(),
+            response=mock_response(
+                status_code=400,
+                reason_phrase="Bad Request",
+                json_data={"error": "Invalid input"},
             ),
         )
         mock_client.get.side_effect = error
 
         with pytest.raises(Exception) as exc_info:
             await client._request("GET", endpoint="/test")
-        assert f"TestAPI API error: HTTP {status_code}" in str(exc_info.value)
-        assert error_field in str(exc_info.value)
+        assert "TestAPI API error: HTTP 400" in str(exc_info.value)
+        assert "Invalid input" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_request_http_error(self, client):
