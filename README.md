@@ -213,6 +213,8 @@ The MCP servers are deployed and available at:
 
 **Production Base URL:** `https://mcp.cloud.curiloo.com`
 
+**Usage analytics:** Production tool calls are logged to BigQuery via Cloud Logging. See [docs/USAGE_ANALYTICS.md](docs/USAGE_ANALYTICS.md) for architecture, setup, and example queries.
+
 ### Unified Endpoint (Recommended)
 
 **Use the unified endpoint to access all APIs in one place:**
