@@ -29,6 +29,6 @@ ENV MCP_PORT=8000
 ENV PYTHONUNBUFFERED=1
 ENV ORANGE_BOOK_DIR=/app/data/orangebook
 
-# Run the server
-CMD ["uv", "run", "medical-mcps"]
+# Start from /app using the installed dependencies without resolving at runtime.
+CMD ["/app/.venv/bin/python", "-m", "medical_mcps.http_server"]
 
