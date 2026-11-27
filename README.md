@@ -42,7 +42,6 @@ Once connected, you'll have access to **100+ tools** across 14 biological and me
 -   **Drugs**: ChEMBL, MyChem.info, OpenFDA
 -   **Literature**: PubMed/PubTator3
 -   **Trials**: ClinicalTrials.gov, NCI Clinical Trials
--   **Knowledge Graphs**: Every Cure Matrix Knowledge Graph
 
 ### Example: Search for a Gene
 
@@ -267,7 +266,6 @@ All endpoints are available at both production and local URLs:
 -   `/tools/myvariant/mcp` - MyVariant.info API
 -   `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
 -   `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
--   `/tools/everycure-kg/mcp` - Every Cure Matrix Knowledge Graph API
 
 ### Example: Configuring Multiple APIs in Cursor
 

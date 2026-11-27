@@ -87,18 +87,14 @@ docker:
 	docker-compose watch
 
 # Deploy to Cloud Run
-# Usage: make deploy-cloud-run IMAGE_TAG=v0.1.9 DOCKERHUB_USERNAME=yourusername SENTRY_DSN=your-dsn EVERYCURE_KG_PASSWORD=your-password
+# Usage: make deploy-cloud-run IMAGE_TAG=v0.1.9 DOCKERHUB_USERNAME=yourusername SENTRY_DSN=your-dsn
 deploy-cloud-run:
 	@if [ -z "$(DOCKERHUB_USERNAME)" ]; then \
 		echo "Error: DOCKERHUB_USERNAME must be set"; \
 		exit 1; \
 	fi
-	@if [ -z "$(EVERYCURE_KG_PASSWORD)" ]; then \
-		echo "Error: EVERYCURE_KG_PASSWORD must be set (get from GitHub secrets)"; \
-		exit 1; \
-	fi
 	@echo "Deploying $(IMAGE) to Cloud Run..."
-	@ENV_VARS="ENVIRONMENT=$(ENVIRONMENT),EVERYCURE_KG_PASSWORD=$(EVERYCURE_KG_PASSWORD)"; \
+	@ENV_VARS="ENVIRONMENT=$(ENVIRONMENT)"; \
 	if [ -n "$(SENTRY_DSN)" ]; then \
 		ENV_VARS="$$ENV_VARS,SENTRY_DSN=$(SENTRY_DSN)"; \
 	fi; \

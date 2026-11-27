@@ -59,16 +59,6 @@ class ServerSettings(BaseSettings):
     retry_max_delay_seconds: float = 120.0  # Maximum total delay for all retries
     retry_min_wait_seconds: float = 1.0  # Minimum wait time between retries
 
-    # Every Cure Matrix Knowledge Graph (Neo4j) configuration
-    everycure_kg_uri: str = (
-        "neo4j+s://neo4j.dev.everycure.org:7687"  # Encrypted connection required
-    )
-    everycure_kg_username: str = "readonly"
-    # Password MUST be set via EVERYCURE_KG_PASSWORD environment variable or .env file
-    # Never commit passwords to code! Add to .env file (which is gitignored)
-    everycure_kg_password: str | None = None  # Required - must be set via env var or .env
-    everycure_kg_default_database: str = "everycure-orchard-feb-26-t3"  # Latest version
-
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
         import os

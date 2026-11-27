@@ -214,19 +214,11 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Cloud Run
-        env:
-          EVERYCURE_KG_PASSWORD: ${{ secrets.EVERYCURE_KG_PASSWORD }}
         run: |
-          if [ -z "$EVERYCURE_KG_PASSWORD" ]; then
-            echo "Error: EVERYCURE_KG_PASSWORD secret not found in GitHub secrets"
-            echo "Please set it using: echo 'password' | gh secret set EVERYCURE_KG_PASSWORD"
-            exit 1
-          fi
           make deploy-cloud-run \
             IMAGE_TAG=${{ needs.version.outputs.tag }} \
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
-            SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            EVERYCURE_KG_PASSWORD="$EVERYCURE_KG_PASSWORD"
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Get deployed service URL
         id: service_url

@@ -2,7 +2,7 @@
   "mcpServers": {
     "medical-mcps": {
       "type": "http",
-      "url": "https://mcp.cloud.curiloo.com/tools/everycure-kg/mcp"
+      "url": "https://mcp.cloud.curiloo.com/tools/unified/mcp"
     },
     "local-medical-mcp": {
       "type": "http",

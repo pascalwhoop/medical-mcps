@@ -89,19 +89,3 @@ def upstream_error_response(
             status_code=status_code,
         ),
     }
-
-
-def is_transient_neo4j_error(exc: Exception) -> bool:
-    message = str(exc).lower()
-    return any(
-        token in message
-        for token in (
-            "defunct",
-            "connection reset",
-            "sessionexpired",
-            "routing information",
-            "failed to read",
-            "failed to write",
-            "serviceunavailable",
-        )
-    )
